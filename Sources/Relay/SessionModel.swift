@@ -8,6 +8,21 @@ import Observation
   var devices = [AudioDevice]()
   var apps = [MusicApp]()
   var musicBundle = "com.spotify.client"
+  var destinationBundle =
+    UserDefaults.standard.string(forKey: "destinationBundle") ?? "com.roblox.RobloxPlayer"
+  var monitorDestination = true
+  var destinationName: String {
+    apps.first(where: { $0.id == destinationBundle })?.name ?? destinationBundle
+  }
+  var musicApps: [MusicApp] {
+    apps.filter { AppRoutingPolicy.isSeparate(music: $0.id, destination: destinationBundle) }
+  }
+  var destinationApps: [MusicApp] {
+    apps.filter { AppRoutingPolicy.isSeparate(music: musicBundle, destination: $0.id) }
+  }
+  var destinationInstructions: String {
+    "In \(destinationName), choose BlackHole 2ch as microphone/input and \(selectedOutput?.name ?? "your headphones") as output."
+  }
   var outputUID = ""
   var micUID = ""
   var includeVoice = false
@@ -80,13 +95,20 @@ import Observation
     }
     apps = NSWorkspace.shared.runningApplications.compactMap { app in
       guard app.activationPolicy == .regular, let bundle = app.bundleIdentifier,
-        bundle != Bundle.main.bundleIdentifier, !bundle.lowercased().contains("roblox")
+        bundle != Bundle.main.bundleIdentifier
       else { return nil }
       return MusicApp(id: bundle, name: app.localizedName ?? bundle)
     }.sorted { $0.name < $1.name }
-    if !apps.contains(where: { $0.id == "com.spotify.client" }) {
-      apps.insert(MusicApp(id: "com.spotify.client", name: "Spotify"), at: 0)
-    }
+    let knownApps = [
+      MusicApp(id: "com.spotify.client", name: "Spotify"),
+      MusicApp(id: "com.roblox.RobloxPlayer", name: "Roblox"),
+      MusicApp(id: "com.hnc.Discord", name: "Discord"), MusicApp(id: "us.zoom.xos", name: "Zoom"),
+    ]
+    for app in knownApps where !apps.contains(where: { $0.id == app.id }) { apps.append(app) }
+    for bundle in [musicBundle, destinationBundle] where !apps.contains(where: { $0.id == bundle })
+    { apps.append(MusicApp(id: bundle, name: bundle)) }
+    apps = Dictionary(apps.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first }).values
+      .sorted { $0.name < $1.name }
     micLockInstalled = FileManager.default.fileExists(atPath: "/Applications/MicLock.app")
   }
   func useSelectedAsNormalOutput() {
@@ -96,7 +118,7 @@ import Observation
       refresh()
       status = "Normal output is ready"
       detail =
-        "\(output.name) is now your normal output. Roblox Music still exists, unchanged. Future sessions restore this normal output."
+        "\(output.name) is now your normal output. Your existing multi-output devices remain unchanged. Future sessions restore this normal output."
     } catch { fail(error.localizedDescription) }
   }
   func applyGains() {
@@ -107,6 +129,21 @@ import Observation
   }
   func hardwareTest() async {
     guard CommandLine.arguments.contains("--hardware-test") else { return }
+    if let index = CommandLine.arguments.firstIndex(of: "--destination"),
+      index + 1 < CommandLine.arguments.count
+    {
+      destinationBundle = CommandLine.arguments[index + 1]
+      refresh()
+    }
+    monitorDestination = !CommandLine.arguments.contains("--no-monitor")
+    let savedDestination = UserDefaults.standard.string(forKey: "destinationBundle")
+    defer {
+      if let savedDestination {
+        UserDefaults.standard.set(savedDestination, forKey: "destinationBundle")
+      } else {
+        UserDefaults.standard.removeObject(forKey: "destinationBundle")
+      }
+    }
     let previous = Hardware.uint(
       AudioObjectID(kAudioObjectSystemObject), kAudioHardwarePropertyDefaultOutputDevice)
     if normalOutputNeedsSetup { useSelectedAsNormalOutput() }
@@ -115,7 +152,9 @@ import Observation
     if active { await enableReturnCheck() }
     for _ in 0..<20 {
       try? await Task.sleep(for: .seconds(1))
-      print("HARDWARE", active, meters, detail, returnCheckMessage)
+      print(
+        "HARDWARE", destinationBundle, "monitor", monitorDestination, "active", active, "paused",
+        interrupted, meters, detail, returnCheckMessage)
       fflush(stdout)
     }
     stop()
@@ -150,9 +189,18 @@ import Observation
       )
       return
     }
-    guard !musicBundle.lowercased().contains("roblox"), musicBundle != Bundle.main.bundleIdentifier
-    else {
-      fail("Choose a dedicated music app. Roblox cannot be a music source.")
+    guard AppRoutingPolicy.isSeparate(music: musicBundle, destination: destinationBundle) else {
+      fail(
+        "Choose different apps for music and calls. A process tap cannot separate browser tabs or windows; capturing the call app as music would cause feedback."
+      )
+      return
+    }
+    let musicProcesses = Set(Hardware.processIDs(bundle: musicBundle))
+    let destinationProcesses = Set(Hardware.processIDs(bundle: destinationBundle))
+    guard musicProcesses.isDisjoint(with: destinationProcesses) else {
+      fail(
+        "These apps share an audio process. Use separate applications for music and calls to prevent feedback."
+      )
       return
     }
     var mic: AudioDevice?
@@ -183,8 +231,10 @@ import Observation
     heardByPlayer = false
     do {
       // Mute the selected processes before moving the unsafe multi-output default.
-      captures.append(try ProcessCapture(bundle: musicBundle, label: "music"))
-      captures.append(try ProcessCapture(bundle: "com.roblox.RobloxPlayer", label: "Roblox"))
+      captures.append(try ProcessCapture(bundle: musicBundle, label: "your music app"))
+      if monitorDestination {
+        captures.append(try ProcessCapture(bundle: destinationBundle, label: destinationName))
+      }
       guard let r = router_create() else {
         throw NSError(
           domain: "Relay", code: 3,
@@ -195,9 +245,12 @@ import Observation
       let musicDevice = captures[0].device
       try Hardware.check(
         await Task.detached { router_input(r, 0, musicDevice) }.value, "Starting music capture")
-      let gameDevice = captures[1].device
-      try Hardware.check(
-        await Task.detached { router_input(r, 2, gameDevice) }.value, "Starting Roblox capture")
+      if monitorDestination {
+        let callDevice = captures[1].device
+        try Hardware.check(
+          await Task.detached { router_input(r, 2, callDevice) }.value,
+          "Starting \(destinationName) capture")
+      }
       if let mic {
         try Hardware.check(
           await Task.detached { router_input(r, 1, mic.id) }.value, "Opening \(mic.name)")
@@ -223,7 +276,8 @@ import Observation
       interrupted = false
       startedAt = Date()
       status = "Sharing music"
-      detail = "In Roblox, choose BlackHole 2ch as your input and \(output.name) as your output."
+      detail = destinationInstructions
+      UserDefaults.standard.set(destinationBundle, forKey: "destinationBundle")
       recoveryPending = recovery.pending
     } catch {
       cleanup()
@@ -250,7 +304,7 @@ import Observation
     cleanup()
     status = recovery.pending ? "Recovery needs attention" : "Sharing stopped"
     if !recovery.pending {
-      detail = "Your previous output has been restored. Spotify and Roblox now play normally."
+      detail = "Your normal output has been restored. Your apps now play normally."
     }
   }
   private func cleanup() {
@@ -301,11 +355,10 @@ import Observation
       interrupted = true
       status = "Sharing paused safely"
       detail =
-        "An audio device or the system output changed. Relay is silent and keeps music/game taps muted. Reconnect your devices, then stop and start again. No automatic speaker fallback."
+        "An audio device or the system output changed. Relay is silent and keeps captured apps muted. Reconnect your devices, then stop and start again. No automatic speaker fallback."
     }
     if !interrupted && observed[0] && detail.hasPrefix("No music signal yet") {
-      detail =
-        "In Roblox, choose BlackHole 2ch as your input and \(selectedOutput?.name ?? "your headphones") as your output."
+      detail = destinationInstructions
     }
     if !interrupted && Date().timeIntervalSince(startedAt) > 8 && !observed[0] {
       detail =
@@ -317,6 +370,7 @@ import Observation
       returnCheckMessage = "Start sharing before enabling this check."
       return
     }
+    guard !busy, !returnCheckEnabled else { return }
     busy = true
     defer {
       busy = false

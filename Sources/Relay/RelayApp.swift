@@ -25,7 +25,7 @@ import SwiftUI
     }
   }
   var body: some Scene {
-    Window("Relay — Music to Roblox", id: "main") {
+    Window("Relay — Share your sound", id: "main") {
       ContentView(model: model)
         .onAppear { delegate.model = model }.task { await model.hardwareTest() }
     }

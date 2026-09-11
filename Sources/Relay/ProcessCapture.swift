@@ -11,7 +11,7 @@ final class ProcessCapture {
         domain: "Relay", code: 4,
         userInfo: [
           NSLocalizedDescriptionKey:
-            "Open \(label == "music" ? "your music app" : "Roblox") before starting. Relay needs its audio process to create an isolated capture."
+            "Open \(label) before starting. Play some audio in it first so Relay can find its audio process. For a call app, you can also turn off Control call/game audio in Relay."
         ])
     }
     let description = CATapDescription(stereoMixdownOfProcesses: processes)

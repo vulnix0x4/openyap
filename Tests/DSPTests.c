@@ -168,6 +168,12 @@ int main(void) {
   CHECK(sqrt(energy / 1200) < .001,
         "48 -> 16 kHz conversion rejects above-Nyquist content");
   router_destroy(r);
+  r = fixture();
+  r->input[2].rate = 0; // No call tap in direct-playback mode.
+  feed(r, 0, .2); feed(r, 1, .3); gains(r, .1, .6, .5, 1, .8);
+  CHECK(closeTo(render(r, 0), .016), "direct-playback mode monitors only music without a call source");
+  CHECK(closeTo(render(r, 1), .27), "direct-playback mode still sends the full music/voice mix");
+  router_destroy(r);
   printf("\n%d failures\n", failures);
   return failures ? 1 : 0;
 }

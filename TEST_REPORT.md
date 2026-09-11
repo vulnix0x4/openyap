@@ -44,3 +44,17 @@ Host: MacBook Pro, macOS 26.6.2, Xcode 26.6, Apple Silicon. BlackHole 2ch, Sony 
 - Confirmation that another Roblox player actually receives the virtual microphone. Local output/readback meters cannot prove this.
 
 No drivers were installed. Existing multi-output devices were not edited, audio services were not restarted, and other apps were not closed. Spotify was briefly resumed for testing and left paused. Relay is delivered in standby with the original system routing restored. The first-use button explicitly establishes the Sony as normal output before a user starts sharing, so subsequent Stop operations cannot restore the old always-sharing multi-output route. Temporary test preference changes were restored; that first-use preference is left for the user to choose.
+
+## Version 1.1 update — September 11, 2026
+
+The repository is public and the app now selects a receiver rather than requiring Roblox. This section supplements the historical v1.0 hardware results above; it does not claim those tests were repeated for Discord or Zoom.
+
+Validation for v1.1:
+
+- Release build and native UI inspection of the Share with selector, destination-specific microphone instructions, and optional call/game monitoring.
+- Nine app-isolation policy cases: distinct Spotify/Discord, Spotify/Zoom, and Spotify/Roblox selections; rejection of same-browser, parent/helper in both directions, Relay self-capture, and empty source.
+- Production startup rejects identical source/receiver selections with monitoring both enabled and disabled, without changing the default output.
+- Injected microphone denial still produces an actionable error without opening hardware or changing the default output.
+- C DSP tests include no-call-tap mode: local music monitoring and the full music/voice sending mix remain correct with source 2 absent. Existing mute, clipping, resampling, drift, and feedback-isolation tests remain applicable.
+
+The Sony currently reports a mono Bluetooth headset output, and the Fifine is not connected. Relay explains the headset-mode state and does not open the Bluetooth microphone or silently fall back to speakers. No new live call, hardware routing, or recovery test was performed on this changed setup. Live Discord/Zoom/other-app reception, browser helper behavior, and physical device reconnection remain hands-on verification items. Their published microphone-selection instructions were checked; that is distinct from a live integration test.

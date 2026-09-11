@@ -11,14 +11,14 @@ References verified against the installed Xcode 26.6 SDK and Apple’s documenta
 - https://developer.apple.com/documentation/coreaudio/catapmutebehavior
 - Installed `CATapDescription.h`, `AudioHardware.h`, and `AudioHardwareBase.h` specify bundle restoration, aggregate tap lists, stream usage, and ownership of returned CF objects.
 
-BlackHole is reused as the public virtual input seen by Roblox. Relay installs no driver and does not rename it. The “app’s virtual microphone” is therefore labeled **BlackHole 2ch**, not an invented Relay microphone device.
+BlackHole is reused as the public virtual input seen by the receiving app. Relay installs no driver and does not rename it. The “app’s virtual microphone” is therefore labeled **BlackHole 2ch**, not an invented Relay microphone device.
 
 ## Signal paths
 
 ```
 Spotify allowlist → process tap → music rings ┬→ local music gain ─┐
                                             │                   ├→ master → protection → Sony output
-Roblox allowlist → process tap → game ring ───┼→ game gain ────────┘
+Receiver allowlist → process tap → game ring ───┼→ game gain ────────┘
                                             │
                                             └→ music send gain ─┐
 Fifine hardware input → mono voice ring → voice gain ────────────┴→ protection → BlackHole output
@@ -56,4 +56,12 @@ Permissions: NSAudioCaptureUsageDescription for system audio; NSMicrophoneUsageD
 
 The included executable targets this Apple Silicon Mac and macOS 26+. It is ad-hoc signed, not notarized. The package builds with Xcode’s Swift 6 toolchain in Swift 5 language compatibility mode for the C callback/pointer boundary. No third-party dependencies are linked.
 
-Roblox’s microphone/output selection and voice processing are external to Relay. Protected music, OS privacy denial, other apps writing to BlackHole, driver failures, and Bluetooth transport quality can affect results. Software isolation prevents Relay from routing game audio back into the mic; using loud speakers can still cause physical acoustic pickup through a real microphone.
+The receiving app’s microphone/output selection and voice processing are external to Relay. Protected music, OS privacy denial, other apps writing to BlackHole, driver failures, and Bluetooth transport quality can affect results. Software isolation prevents Relay from routing game audio back into the mic; using loud speakers can still cause physical acoustic pickup through a real microphone.
+
+## Version 1.1: selectable receivers
+
+The destination bundle is selected by the user rather than hardcoded to Roblox. The same C source slot 2 remains a listening-only bus: it can carry Discord, Zoom, another game, or any other individually capturable selected receiver. That slot is structurally excluded from the send bus.
+
+With call monitoring disabled, source slot 2 has no IOProc and a zero sample rate; the music and optional microphone still mix into BlackHole. The receiver plays directly to its selected output, so Relay disables the call/game slider and explains that master listening no longer controls that app. No receiver process is required to start in this mode.
+
+A shared AppRoutingPolicy rejects identical, ancestor/helper, empty, and Relay-owned bundle selections. Startup also compares discovered process IDs for overlap. Music and receiver pickers filter conflicting entries. Browser tabs cannot be isolated by these process taps; music and calls must use different apps. Receiver selection does not restrict which external applications can read BlackHole.

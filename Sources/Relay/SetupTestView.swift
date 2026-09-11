@@ -7,7 +7,7 @@ struct SetupTestView: View {
     VStack(alignment: .leading, spacing: 18) {
       Text("Test your setup").font(.title.bold())
       Text(
-        "Start sharing first. These checks use real audio; Relay never sends a test tone into Roblox."
+        "Start sharing first. These checks use real audio; Relay never sends a test tone into your receiving app."
       ).foregroundStyle(.secondary)
       TestCheck(
         number: "1", title: "Music capture", detail: "Play a song in the selected music app.",
@@ -36,11 +36,11 @@ struct SetupTestView: View {
           .disabled(!model.active)
       }
       Divider()
-      Text("Final check in Roblox").font(.headline)
+      Text("Final check in \(model.destinationName)").font(.headline)
       Text(
-        "Select BlackHole 2ch as input and your headphones as output. Ask another player to confirm music and voice. Local meters cannot verify Roblox’s transmission or another player’s playback."
+        "Select BlackHole 2ch as input and your headphones as output. Ask another person to confirm music and voice, or check a recording in the receiving app. Local meters cannot verify delivery to a call or recording."
       ).font(.callout)
-      Toggle("Another player confirmed they can hear it", isOn: $model.heardByPlayer)
+      Toggle("The receiver or recording confirmed the audio", isOn: $model.heardByPlayer)
       HStack {
         if !model.active {
           Button("Start sharing for test") { Task { await model.start() } }.disabled(model.busy)

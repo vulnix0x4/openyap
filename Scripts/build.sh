@@ -17,10 +17,10 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>CFBundleName</key><string>Relay</string>
 <key>CFBundleDisplayName</key><string>Relay</string>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>1.0</string>
-<key>CFBundleVersion</key><string>1</string>
+<key>CFBundleShortVersionString</key><string>1.1.0</string>
+<key>CFBundleVersion</key><string>2</string>
 <key>LSMinimumSystemVersion</key><string>26.0</string>
-<key>NSAudioCaptureUsageDescription</key><string>Relay separates music and Roblox audio so you can listen and share at independent volumes. Audio stays on this Mac.</string>
+<key>NSAudioCaptureUsageDescription</key><string>Relay separates music and call audio so you can listen and share at independent volumes. Audio stays on this Mac.</string>
 <key>NSMicrophoneUsageDescription</key><string>Relay uses your chosen microphone only when you include your voice. The setup test can also measure BlackHole’s virtual input.</string>
 <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
