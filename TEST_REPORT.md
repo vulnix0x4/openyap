@@ -74,3 +74,7 @@ Live read-only inspection found WH-1000XM5 stereo output has no ordinary main sc
 ## 1.1.4 — Louder sharing button
 
 Added an optional +6 dB music-send boost before the existing output protector, with smoothed transitions and immediate music mute. Release build and strict signature verification passed. DSP tests under AddressSanitizer/UndefinedBehaviorSanitizer passed, including boost initially off, music-only gain increase with unchanged microphone contribution, unchanged listening mix, immediate mute, protected full-scale boosted mix, return to normal gain, and no game-to-send path. Existing resampling and routing/app-isolation tests also passed. Installed at the usual app path via atomic bundle swap without restarting the existing process. Live UI interaction and remote Roblox loudness remain unverified during the active session.
+
+## 1.1.5 — Max sharing locks the music-send level
+
+Release build and signature verification passed. A model-level test (`Tests/MaxSharingTests.swift`) verified enabling Max sharing sets 100%, effective music-send gain stays at unity even if the backing slider value is changed, other gains remain independent, mute overrides the lock, and disabling restores slider control. The test never started an audio session. Existing +6 dB DSP boost/protection code is unchanged from the tested 1.1.4 version. Updated the usual bundle without restarting the active process. Live UI and remote-player loudness remain untested during the current call.

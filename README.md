@@ -81,3 +81,7 @@ Version 1.1.2 starts “Music others hear” at 100%. Listening and microphone d
 ### Louder sharing (1.1.4)
 
 Click **Louder sharing (+6 dB)** below “Music others hear” to boost only shared music. Click again to turn it off. It starts off each launch, keeps the music mute effective, and leaves listening and microphone gains unchanged. The output ceiling stays active; loud material may sound more compressed, and Roblox’s own processing may reduce the boost.
+
+### Max sharing (1.1.5)
+
+**Max sharing** replaces Louder sharing. Turning it on sets shared music to 100%, locks that slider, and keeps the +6 dB boost active. Mute remains available. Turning it off unlocks the slider and removes the boost. Headphone, microphone, game, and master listening levels stay separate. The output ceiling and Roblox processing still apply; this does not guarantee maximum loudness at another player’s headphones.

@@ -27,7 +27,12 @@ import Observation
   var micUID = ""
   var includeVoice = false
   var gains: [Float] = [0.25, 1.0, 0.7, 0.8, 0.65]
-  var louderSharing = false
+  var maxSharing = false {
+    didSet {
+      if maxSharing { gains[1] = 1 }
+      applyGains()
+    }
+  }
   var muted = [false, false, false, false, false]
   var meters = [Float](repeating: 0, count: 6)
   var active = false
@@ -122,11 +127,15 @@ import Observation
         "\(output.name) is now your normal output. Your existing multi-output devices remain unchanged. Future sessions restore this normal output."
     } catch { fail(error.localizedDescription) }
   }
+  func effectiveGain(_ control: Int) -> Float {
+    if muted[control] || (control == 2 && !includeVoice) { return 0 }
+    return control == 1 && maxSharing ? 1 : gains[control]
+  }
   func applyGains() {
     guard let engine else { return }
-    router_music_boost(engine, louderSharing ? 1 : 0)
+    router_music_boost(engine, maxSharing ? 1 : 0)
     for i in 0..<5 {
-      router_gain(engine, Int32(i), muted[i] || (i == 2 && !includeVoice) ? 0 : gains[i])
+      router_gain(engine, Int32(i), effectiveGain(i))
     }
   }
   func hardwareTest() async {
