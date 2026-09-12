@@ -1,5 +1,6 @@
 import AppKit
 import CoreAudio
+import AudioToolbox
 
 struct AudioDevice: Identifiable, Hashable {
   let id: AudioDeviceID
@@ -74,14 +75,28 @@ enum Hardware {
     }.filter { !$0.name.hasPrefix("Relay capture") }
   }
   // Address the chosen physical device only, never the default aggregate or BlackHole.
-  static func outputVolume(_ device: AudioDevice) -> Float? {
+  private static func volumeProperty(_ device: AudioDevice) -> AudioObjectPropertyAddress? {
     guard device.isPhysical,
       string(device.id, kAudioDevicePropertyDeviceUID) == device.uid,
       uint(device.id, kAudioDevicePropertyDeviceIsAlive) != 0 else { return nil }
-    var a = address(kAudioDevicePropertyVolumeScalar, kAudioObjectPropertyScopeOutput)
-    var writable: DarwinBoolean = false
-    guard AudioObjectIsPropertySettable(device.id, &a, &writable) == noErr,
-      writable.boolValue else { return nil }
+    // Bluetooth devices can expose channel volumes and a virtual main control,
+    // while built-in speakers expose the ordinary main scalar.
+    for selector in [kAudioDevicePropertyVolumeScalar,
+      kAudioHardwareServiceDeviceProperty_VirtualMainVolume] {
+      var a = address(selector, kAudioObjectPropertyScopeOutput)
+      var writable: DarwinBoolean = false
+      var value: Float = 0
+      var size: UInt32 = 4
+      if AudioObjectIsPropertySettable(device.id, &a, &writable) == noErr,
+        writable.boolValue,
+        AudioObjectGetPropertyData(device.id, &a, 0, nil, &size, &value) == noErr,
+        value.isFinite, (0...1).contains(value) { return a }
+    }
+    return nil
+  }
+
+  static func outputVolume(_ device: AudioDevice) -> Float? {
+    guard var a = volumeProperty(device) else { return nil }
     var value: Float = 0
     var size: UInt32 = 4
     guard AudioObjectGetPropertyData(device.id, &a, 0, nil, &size, &value) == noErr,
@@ -90,11 +105,10 @@ enum Hardware {
   }
 
   static func setOutputVolume(_ device: AudioDevice, value: Float) throws {
-    guard value.isFinite, (0...1).contains(value), outputVolume(device) != nil else {
+    guard value.isFinite, (0...1).contains(value), var a = volumeProperty(device) else {
       throw NSError(domain: "Relay.Audio", code: -1,
         userInfo: [NSLocalizedDescriptionKey: "Device volume is unavailable."])
     }
-    var a = address(kAudioDevicePropertyVolumeScalar, kAudioObjectPropertyScopeOutput)
     var value = value
     try check(AudioObjectSetPropertyData(device.id, &a, 0, nil, 4, &value),
       "Changing listening device volume")

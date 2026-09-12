@@ -66,3 +66,7 @@ Built and ad-hoc signature verified at `build/Relay-next/Relay.app` without repl
 ## 1.1.2 — sharing default and local update
 
 Changed the initial music-send gain from 0.65 to 1.0. Release compilation and strict bundle signature verification passed. Installed the new bundle at the original local app path using an atomic directory swap, retaining the previous bundle and verifying the existing Relay PID remained alive. No app restart, audio-device writes, or live mixing changes were performed. The new UI and default take effect on the next launch; that launch was intentionally not tested during the existing session.
+
+## 1.1.3 — Sony headphone volume detection
+
+Live read-only inspection found WH-1000XM5 stereo output has no ordinary main scalar but does expose a writable virtual main volume (about 30%) and per-channel controls. Added virtual-main fallback while retaining physical-device UID/alive checks. The new accessor successfully read Sony volume; rejected invalid values and excluded virtual/aggregate devices without writing hardware. Release build and strict signature verification passed. Updated the usual app bundle without restarting the running process, retaining its old bundle without an .app extension to avoid duplicate app-search entries. Actual slider writes and UI validation remain deferred until the user ends their live sharing session.
