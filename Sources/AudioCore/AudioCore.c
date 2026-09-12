@@ -27,7 +27,7 @@ struct Router {
   Ring ring[2][3];
   Endpoint input[4], output[2];
   _Atomic float gain[5], meter[6];
-  _Atomic int paused;
+  _Atomic int paused, musicBoost;
   _Atomic unsigned long drops;
   float smooth[2][5];
 };
@@ -187,6 +187,8 @@ static OSStatus callback(AudioDeviceID d, const AudioTimeStamp *t,
     for (int g = 0; g < 5; g++) {
       float target =
           atomic_load(&r->gain[g]); // exact mute, ramp unmute/gain changes
+      if (sink == 1 && g == 1 && atomic_load(&r->musicBoost))
+        target *= 2.0f; // +6 dB on shared music only, before output protection
       r->smooth[sink][g] =
           target == 0
               ? 0
@@ -305,6 +307,9 @@ OSStatus router_output(Router *r, int s, AudioDeviceID d) {
 void router_gain(Router *r, int i, float g) {
   if (r && i >= 0 && i < 5)
     atomic_store(&r->gain[i], isfinite(g) ? clampf(g, 0, 1) : 0);
+}
+void router_music_boost(Router *r, int enabled) {
+  if (r) atomic_store(&r->musicBoost, enabled != 0);
 }
 void router_pause(Router *r, int p) {
   if (r)

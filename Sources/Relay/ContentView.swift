@@ -88,6 +88,13 @@ struct ContentView: View {
               title: "Music others hear", symbol: "music.note", gain: $model.gains[1],
               muted: $model.muted[1],
               level: model.meters[0] * model.gains[1] * (model.muted[1] ? 0 : 1), tint: .orange)
+            Toggle(isOn: $model.louderSharing) {
+              Label(model.louderSharing ? "Louder sharing · ON (+6 dB)" : "Louder sharing (+6 dB)",
+                systemImage: "speaker.wave.3.fill")
+            }
+            .toggleStyle(.button).tint(.orange)
+            .help("Boosts shared music only. Output protection stays on; Roblox may limit loudness.")
+            .accessibilityLabel("Louder sharing, plus six decibels")
             MixerStrip(
               title: "My voice to others", symbol: "mic", gain: $model.gains[2],
               muted: $model.muted[2],
@@ -187,6 +194,7 @@ struct ContentView: View {
     }
     .frame(width: 650, height: min(850, (NSScreen.main?.visibleFrame.height ?? 950) - 90))
     .onChange(of: model.outputUID) { model.refresh() }
+    .onChange(of: model.louderSharing) { model.applyGains() }
     .onChange(of: model.gains) { model.applyGains() }.onChange(of: model.muted) {
       model.applyGains()
     }

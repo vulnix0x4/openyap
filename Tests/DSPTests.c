@@ -174,6 +174,33 @@ int main(void) {
   CHECK(closeTo(render(r, 0), .016), "direct-playback mode monitors only music without a call source");
   CHECK(closeTo(render(r, 1), .27), "direct-playback mode still sends the full music/voice mix");
   router_destroy(r);
+  r = fixture();
+  CHECK(atomic_load(&r->musicBoost) == 0, "boost defaults off");
+  feed(r, 0, .2); feed(r, 1, .1); feed(r, 2, .3);
+  gains(r, 1, 1, 1, 1, 1);
+  router_music_boost(r, 1);
+  float boosted = 0;
+  for (int i = 0; i < 10; i++) boosted = render(r, 1);
+  CHECK(fabsf(boosted - .5f) < .003f, "boost doubles music only, preserves microphone gain");
+  CHECK(closeTo(render(r, 0), .5), "boost leaves listening mix unchanged");
+  router_gain(r, 1, 0);
+  CHECK(closeTo(render(r, 1), .1), "boost respects immediate music mute");
+  router_destroy(r);
+  r = fixture(); feed(r, 0, 1); feed(r, 1, 1); gains(r, 1, 1, 1, 1, 1);
+  router_music_boost(r, 1);
+  for (int i = 0; i < 10; i++) {
+    float value = render(r, 1);
+    CHECK(isfinite(value) && fabsf(value) <= .981f, "boosted full-scale mix stays protected");
+  }
+  router_destroy(r);
+  r = fixture(); feed(r, 0, .2); gains(r, 1, 1, 0, 1, 1);
+  r->smooth[1][1] = 2; router_music_boost(r, 0);
+  for (int i = 0; i < 10; i++) boosted = render(r, 1);
+  CHECK(fabsf(boosted - .2f) < .003f, "disabling boost returns to normal level");
+  router_destroy(r);
+  r = fixture(); feed(r, 2, 1); gains(r, 1, 1, 1, 1, 1); router_music_boost(r, 1);
+  CHECK(render(r, 1) == 0, "boost cannot send game audio");
+  router_destroy(r);
   printf("\n%d failures\n", failures);
   return failures ? 1 : 0;
 }

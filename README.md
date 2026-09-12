@@ -77,3 +77,7 @@ The slider below Master listening controls the selected physical device’s own 
 For an update staged in `build/Relay-next/Relay.app`, finish your current call, quit the old Relay normally, then open the new copy. Do not run both copies together.
 
 Version 1.1.2 starts “Music others hear” at 100%. Listening and microphone defaults are unchanged; all live sliders remain adjustable.
+
+### Louder sharing (1.1.4)
+
+Click **Louder sharing (+6 dB)** below “Music others hear” to boost only shared music. Click again to turn it off. It starts off each launch, keeps the music mute effective, and leaves listening and microphone gains unchanged. The output ceiling stays active; loud material may sound more compressed, and Roblox’s own processing may reduce the boost.
