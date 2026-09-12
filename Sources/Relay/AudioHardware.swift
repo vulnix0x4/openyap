@@ -73,6 +73,33 @@ enum Hardware {
         transport: uint(id, kAudioDevicePropertyTransportType))
     }.filter { !$0.name.hasPrefix("Relay capture") }
   }
+  // Address the chosen physical device only, never the default aggregate or BlackHole.
+  static func outputVolume(_ device: AudioDevice) -> Float? {
+    guard device.isPhysical,
+      string(device.id, kAudioDevicePropertyDeviceUID) == device.uid,
+      uint(device.id, kAudioDevicePropertyDeviceIsAlive) != 0 else { return nil }
+    var a = address(kAudioDevicePropertyVolumeScalar, kAudioObjectPropertyScopeOutput)
+    var writable: DarwinBoolean = false
+    guard AudioObjectIsPropertySettable(device.id, &a, &writable) == noErr,
+      writable.boolValue else { return nil }
+    var value: Float = 0
+    var size: UInt32 = 4
+    guard AudioObjectGetPropertyData(device.id, &a, 0, nil, &size, &value) == noErr,
+      value.isFinite, (0...1).contains(value) else { return nil }
+    return value
+  }
+
+  static func setOutputVolume(_ device: AudioDevice, value: Float) throws {
+    guard value.isFinite, (0...1).contains(value), outputVolume(device) != nil else {
+      throw NSError(domain: "Relay.Audio", code: -1,
+        userInfo: [NSLocalizedDescriptionKey: "Device volume is unavailable."])
+    }
+    var a = address(kAudioDevicePropertyVolumeScalar, kAudioObjectPropertyScopeOutput)
+    var value = value
+    try check(AudioObjectSetPropertyData(device.id, &a, 0, nil, 4, &value),
+      "Changing listening device volume")
+  }
+
   static func setDefault(
     _ id: AudioDeviceID,
     key: AudioObjectPropertySelector = kAudioHardwarePropertyDefaultOutputDevice

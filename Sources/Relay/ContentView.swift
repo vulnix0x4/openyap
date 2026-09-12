@@ -107,6 +107,10 @@ struct ContentView: View {
           ).font(.caption)
             .foregroundStyle(.secondary)
         }.padding(14).background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 12))
+        if let output = model.selectedOutput {
+          DeviceVolumeView(device: output).id(output.uid)
+            .padding(14).background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 12))
+        }
         HStack {
           Image(systemName: "arrow.turn.down.right").foregroundStyle(.orange)
           VStack(alignment: .leading, spacing: 3) {
@@ -158,7 +162,7 @@ struct ContentView: View {
               "Music → listening + BlackHole\nSelected microphone → BlackHole only\n\(model.destinationName) → \(model.monitorDestination ? "listening only; never the sharing bus" : "normal app playback; not captured")"
             ).font(.caption.monospaced())
             Text(
-              "Relay temporarily uses Relay Listening, a fixed route to your chosen device, as the default output. Stop restores the previous output. Existing multi-output devices, input selection, and hardware volumes are untouched."
+              "Relay temporarily uses Relay Listening, a fixed route to your chosen device, as the default output. Stop restores the previous output. Existing multi-output devices, and input selection are untouched. Device volume changes only when you move the speaker / headphone slider; that intentional adjustment is kept."
             ).font(.caption)
             Text(
               "Live peaks: music \(model.meters[0], specifier: "%.3f") · mic \(model.meters[1], specifier: "%.3f") · call/game \(model.meters[2], specifier: "%.3f") · send \(model.meters[4], specifier: "%.3f") · return \(model.meters[5], specifier: "%.3f")"

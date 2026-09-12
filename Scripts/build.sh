@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "${0:A:h:h}"
 swift build -c release
-app="$PWD/build/Relay.app"
+app="${RELAY_APP_OUTPUT:-$PWD/build/Relay.app}"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 swift Scripts/icon.swift build/Relay.iconset
 iconutil -c icns build/Relay.iconset -o "$app/Contents/Resources/Relay.icns"
@@ -17,8 +17,8 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>CFBundleName</key><string>Relay</string>
 <key>CFBundleDisplayName</key><string>Relay</string>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>1.1.0</string>
-<key>CFBundleVersion</key><string>2</string>
+<key>CFBundleShortVersionString</key><string>1.1.1</string>
+<key>CFBundleVersion</key><string>3</string>
 <key>LSMinimumSystemVersion</key><string>26.0</string>
 <key>NSAudioCaptureUsageDescription</key><string>Relay separates music and call audio so you can listen and share at independent volumes. Audio stays on this Mac.</string>
 <key>NSMicrophoneUsageDescription</key><string>Relay uses your chosen microphone only when you include your voice. The setup test can also measure BlackHole’s virtual input.</string>

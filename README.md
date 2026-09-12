@@ -69,3 +69,9 @@ Open `Package.swift` in Xcode to browse and edit. Use the build script to produc
 ```
 
 The recovery test targets this Mac’s connected stereo Sony output. The permission test injects a denial and opens no microphone. See `TEST_REPORT.md` for what was actually checked and `ARCHITECTURE.md` for the routing implementation.
+
+### Speaker / headphone volume (1.1.1)
+
+The slider below Master listening controls the selected physical device’s own volume. This can explain quiet playback even when Relay’s mix sliders are at 100%. It affects all local sound on that device, not the BlackHole sharing mix. It reads the current setting on launch/reconnection; only moving the slider changes it. Your deliberate volume adjustment remains after sharing stops. Devices without a writable main volume control show instructions to use their physical volume buttons.
+
+For an update staged in `build/Relay-next/Relay.app`, finish your current call, quit the old Relay normally, then open the new copy. Do not run both copies together.
