@@ -62,3 +62,7 @@ The Sony currently reports a mono Bluetooth headset output, and the Fifine is no
 ## 1.1.1 — physical listening volume
 
 Built and ad-hoc signature verified at `build/Relay-next/Relay.app` without replacing or launching the active app. The existing DSP sanitizer and routing/app-isolation suites passed (zero failures). A separate read-only helper using the new hardware accessor verified the speakers at 40%, rejected nonfinite/out-of-range writes before any hardware mutation, and confirmed virtual/aggregate devices cannot use this control. The control writes only the selected physical device’s output scalar and never changes defaults or mixer gains. No valid hardware write or new UI interaction was exercised during the active call. Slider interaction and physical disconnect/reconnect still need hands-on verification after the call. Unsupported devices deliberately offer physical-button guidance instead of substituting software gain.
+
+## 1.1.2 — sharing default and local update
+
+Changed the initial music-send gain from 0.65 to 1.0. Release compilation and strict bundle signature verification passed. Installed the new bundle at the original local app path using an atomic directory swap, retaining the previous bundle and verifying the existing Relay PID remained alive. No app restart, audio-device writes, or live mixing changes were performed. The new UI and default take effect on the next launch; that launch was intentionally not tested during the existing session.

@@ -26,7 +26,7 @@ import Observation
   var outputUID = ""
   var micUID = ""
   var includeVoice = false
-  var gains: [Float] = [0.25, 0.65, 0.7, 0.8, 0.65]
+  var gains: [Float] = [0.25, 1.0, 0.7, 0.8, 0.65]
   var muted = [false, false, false, false, false]
   var meters = [Float](repeating: 0, count: 6)
   var active = false
