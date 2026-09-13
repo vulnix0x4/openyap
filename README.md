@@ -102,3 +102,11 @@ Effects use the existing selected output and BlackHole routes and the same outpu
 The soundboard starts collapsed. Synthesized demo pads are now hidden by default; use **Show synthesized demo sounds** to reveal them. Imported recordings appear alphabetically, and their copies persist across app updates.
 
 The local installation for this task includes 21 sourced recordings, including the original Vine Boom from [Bluezone Corporation](https://www.bluezone-corporation.com/blog/original-vine-boom-sound-effect) and Discord Notification, Bruh, Bonk, Roblox Oof, Emotional Damage, Taco Bell Bong, and other short clips from the [3kh0 soundboard collection](https://github.com/3kh0/soundboard/blob/main/sounds.json). Source URLs and SHA-256 hashes are saved locally in Application Support/Relay/Sources. These third-party recordings are not included in the Git repository or downloadable app bundle. Bluezone permits creative use of its original boom but excludes redistribution as a sound library; the other recordings are not represented as freely redistributable assets. Public installs can import their own files.
+
+### More recordings and refresh (1.2.2)
+
+Expanding the soundboard refreshes the local library, so clips added while Relay is open appear without another restart once this version is running. It still starts collapsed.
+
+The local library now has 42 sourced recordings. New additions include Discord incoming/outgoing calls and voice-channel join/leave sounds from [lefuturiste/discord-sounds](https://github.com/lefuturiste/discord-sounds), plus Metal Pipe, Talking Ben Yes/No, Cartoon Slip, Minecraft Anvil, Doors Screech Psst, Clash Royale Heheheha, A Few Moments Later, and more from the previously credited 3kh0 collection. These files remain local, not part of the public app bundle.
+
+**Door Knocking credit:** “Door Knocking Sound Effect” by Alexander / Orange Free Sounds, [source](https://orangefreesounds.com/door-knocking-sound-effect/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The local playback copy is converted from MP3 to stereo 48 kHz CAF. No endorsement implied.

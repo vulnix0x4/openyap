@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 
 @MainActor @Observable final class SoundboardLibrary {
   var clips = [SoundClip]()
-  var showSynthesized = false { didSet { reload() } }
+  var showSynthesized = false { didSet { refresh() } }
   var importing = false
   var message = "Your imported recordings stay on this Mac. Use Import sounds to add more."
   private let directoryOverride: URL?
@@ -13,8 +13,8 @@ import UniformTypeIdentifiers
     return FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
       .appendingPathComponent("Relay/Sounds", isDirectory: true)
   }
-  init(directory: URL? = nil) { directoryOverride = directory; reload() }
-  private func reload() {
+  init(directory: URL? = nil) { directoryOverride = directory; refresh() }
+  func refresh() {
     let urls = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
     clips = (showSynthesized ? SoundClip.builtIns : []) + urls.filter { $0.pathExtension == "caf" && !$0.lastPathComponent.hasSuffix(".partial.caf") }.sorted { $0.lastPathComponent < $1.lastPathComponent }.map {
       SoundClip(id: $0.lastPathComponent, name: String($0.deletingPathExtension().lastPathComponent.dropFirst(37)), symbol: "waveform", preset: nil, url: $0)
@@ -49,14 +49,14 @@ import UniformTypeIdentifiers
           try FileManager.default.moveItem(at: temporary, to: destination)
         }.value
         successes += 1
-        reload()
+        refresh()
       } catch { failures.append("\(url.lastPathComponent): \(error.localizedDescription)") }
     }
     message = failures.isEmpty ? "Imported \(successes) sound\(successes == 1 ? "" : "s")." : "Imported \(successes). " + failures.joined(separator: " ")
   }
   func remove(_ clip: SoundClip) {
     guard let url = clip.url else { return }
-    do { try FileManager.default.removeItem(at: url); reload() }
+    do { try FileManager.default.removeItem(at: url); refresh() }
     catch { message = "Could not remove this sound: \(error.localizedDescription)" }
   }
 }

@@ -61,6 +61,7 @@ struct SoundboardView: View {
       Label("Soundboard", systemImage: "square.grid.3x3.fill").font(.headline)
     }
     .padding(14).background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 12))
+    .onChange(of: expanded) { if expanded { library.refresh() } }
     .onChange(of: model.soundHear) { model.applySoundGains() }
     .onChange(of: model.soundSend) { model.applySoundGains() }
   }

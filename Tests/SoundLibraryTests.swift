@@ -9,7 +9,11 @@ import Foundation
     let directory=root.appendingPathComponent("Library")
     let library=SoundboardLibrary(directory:directory)
     precondition(library.clips.isEmpty && !library.showSynthesized)
+    let alreadyOpen = SoundboardLibrary(directory: directory)
     await library.importURLs([source])
+    precondition(alreadyOpen.clips.isEmpty)
+    alreadyOpen.refresh()
+    precondition(alreadyOpen.clips.count == 1)
     precondition(library.clips.count==1)
     let imported=library.clips.last!
     precondition(imported.name=="My custom boom" && imported.url != source)
