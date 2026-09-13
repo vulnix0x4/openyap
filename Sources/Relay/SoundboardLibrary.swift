@@ -3,21 +3,22 @@ import Observation
 import UniformTypeIdentifiers
 
 @MainActor @Observable final class SoundboardLibrary {
-  var clips = SoundClip.builtIns
+  var clips = [SoundClip]()
+  var showSynthesized = false { didSet { reload() } }
   var importing = false
-  var message = "Original effects included. Import your own Vine Boom, Discord ping, or other clips."
+  var message = "Your imported recordings stay on this Mac. Use Import sounds to add more."
   private let directoryOverride: URL?
   private var directory: URL {
     if let directoryOverride { return directoryOverride }
-    return     FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+    return FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
       .appendingPathComponent("Relay/Sounds", isDirectory: true)
   }
   init(directory: URL? = nil) { directoryOverride = directory; reload() }
   private func reload() {
     let urls = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
-    clips = SoundClip.builtIns + urls.filter { $0.pathExtension == "caf" && !$0.lastPathComponent.hasSuffix(".partial.caf") }.sorted { $0.lastPathComponent < $1.lastPathComponent }.map {
+    clips = (showSynthesized ? SoundClip.builtIns : []) + urls.filter { $0.pathExtension == "caf" && !$0.lastPathComponent.hasSuffix(".partial.caf") }.sorted { $0.lastPathComponent < $1.lastPathComponent }.map {
       SoundClip(id: $0.lastPathComponent, name: String($0.deletingPathExtension().lastPathComponent.dropFirst(37)), symbol: "waveform", preset: nil, url: $0)
-    }
+    }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
   }
   func importSounds() {
     guard !importing else { return }
@@ -35,7 +36,7 @@ import UniformTypeIdentifiers
     defer { importing = false }
     var successes = 0, failures = [String]()
     for url in urls {
-      guard clips.count < 60 else { failures.append("The library holds up to 48 imported sounds."); break }
+      guard clips.filter({ $0.url != nil }).count < 48 else { failures.append("The library holds up to 48 imported sounds."); break }
       do {
         let folder = directory
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)

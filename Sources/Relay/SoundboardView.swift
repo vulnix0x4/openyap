@@ -2,12 +2,13 @@ import SwiftUI
 
 struct SoundboardView: View {
   @Bindable var model: SessionModel
-  @State private var expanded = true
+  @State private var expanded = false
   @State private var search = ""
   private var clips: [SoundClip] {
     model.soundLibrary.clips.filter { search.isEmpty || $0.name.localizedCaseInsensitiveContains(search) }
   }
   var body: some View {
+    @Bindable var library = model.soundLibrary
     DisclosureGroup(isExpanded: $expanded) {
       VStack(alignment: .leading, spacing: 12) {
         HStack {
@@ -51,6 +52,8 @@ struct SoundboardView: View {
           Button("Stop sounds", systemImage: "stop.fill", action: model.stopSounds)
             .tint(.orange)
         }
+        Toggle("Show synthesized demo sounds", isOn: $library.showSynthesized)
+          .font(.caption)
         Text(model.soundLibrary.message).font(.caption).foregroundStyle(.secondary)
           .fixedSize(horizontal: false, vertical: true)
       }.padding(.top, 10)

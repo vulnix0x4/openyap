@@ -96,3 +96,9 @@ Open **Soundboard**, start sharing, then click a pad. Twelve original synthesize
 - Search filters pads. Right-click an imported pad to remove its local copy; your original file stays intact.
 
 Effects use the existing selected output and BlackHole routes and the same output protection. There is no new driver or permission request. Pads are disabled until sharing starts. Bluetooth listening can arrive later than the wired/virtual output. The in-session immutable clip cache holds up to three minutes of unique decoded audio; a full cache shows a message, never automatically restarts sharing. Stop/start later clears it.
+
+### Recordings-first soundboard (1.2.1)
+
+The soundboard starts collapsed. Synthesized demo pads are now hidden by default; use **Show synthesized demo sounds** to reveal them. Imported recordings appear alphabetically, and their copies persist across app updates.
+
+The local installation for this task includes 21 sourced recordings, including the original Vine Boom from [Bluezone Corporation](https://www.bluezone-corporation.com/blog/original-vine-boom-sound-effect) and Discord Notification, Bruh, Bonk, Roblox Oof, Emotional Damage, Taco Bell Bong, and other short clips from the [3kh0 soundboard collection](https://github.com/3kh0/soundboard/blob/main/sounds.json). Source URLs and SHA-256 hashes are saved locally in Application Support/Relay/Sources. These third-party recordings are not included in the Git repository or downloadable app bundle. Bluezone permits creative use of its original boom but excludes redistribution as a sound library; the other recordings are not represented as freely redistributable assets. Public installs can import their own files.
