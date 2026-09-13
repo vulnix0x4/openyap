@@ -5,6 +5,15 @@ import CoreAudio
 import Observation
 
 @MainActor @Observable final class SessionModel {
+  let soundLibrary = SoundboardLibrary()
+  var soundHear: Float = 0.35
+  var soundSend: Float = 0.7
+  var soundMeters: [Float] = [0, 0]
+  var playingSoundID: String?
+  var soundStatus = "Tap a pad. A new sound replaces the previous one."
+  @ObservationIgnored private var soundSlots = [String: Int32]()
+  @ObservationIgnored private var soundRequest = 0
+  @ObservationIgnored private var soundStartedAt = Date.distantPast
   var devices = [AudioDevice]()
   var apps = [MusicApp]()
   var musicBundle = "com.spotify.client"
@@ -126,6 +135,51 @@ import Observation
       detail =
         "\(output.name) is now your normal output. Your existing multi-output devices remain unchanged. Future sessions restore this normal output."
     } catch { fail(error.localizedDescription) }
+  }
+  func applySoundGains() {
+    guard let engine else { return }
+    router_sound_gain(engine, 0, soundHear)
+    router_sound_gain(engine, 1, soundSend)
+  }
+  func playSound(_ clip: SoundClip) {
+    guard active, !busy, !interrupted, let engine else { return }
+    soundRequest += 1
+    let request = soundRequest
+    // Stop the old clip immediately; decoding cannot accidentally resume it.
+    router_sound_play(engine, -1)
+    playingSoundID = clip.id
+    soundStatus = "Loading \(clip.name)…"
+    Task { @MainActor in
+      do {
+        var slot = soundSlots[clip.id]
+        if slot == nil {
+          let samples = try await Task.detached { try SoundAudio.samples(for: clip) }.value
+          guard request == soundRequest, active, !interrupted, self.engine == engine else { return }
+          let loaded = samples.withUnsafeBufferPointer {
+            router_sound_load(engine, $0.baseAddress, UInt32(samples.count / 2))
+          }
+          guard loaded >= 0 else { throw SoundAudio.problem("Sound memory is full for this session. Restart sharing later to clear it.") }
+          soundSlots[clip.id] = loaded
+          slot = loaded
+        }
+        guard request == soundRequest, active, !interrupted, self.engine == engine, let slot else { return }
+        applySoundGains()
+        router_sound_play(engine, slot)
+        soundStartedAt = Date()
+        soundStatus = "Playing \(clip.name)"
+      } catch {
+        guard request == soundRequest else { return }
+        playingSoundID = nil
+        soundStatus = error.localizedDescription
+      }
+    }
+  }
+  func stopSounds() {
+    soundRequest += 1
+    if let engine { router_sound_play(engine, -1) }
+    playingSoundID = nil
+    soundStatus = "Sounds stopped. Music sharing is unchanged."
+    soundMeters = [0, 0]
   }
   func effectiveGain(_ control: Int) -> Float {
     if muted[control] || (control == 2 && !includeVoice) { return 0 }
@@ -282,6 +336,7 @@ import Observation
       sessionMicID = mic?.id ?? 0
       sessionBlackHoleID = bh.id
       applyGains()
+      applySoundGains()
       router_pause(r, 0)
       active = true
       interrupted = false
@@ -300,6 +355,7 @@ import Observation
       if busy { cancelling = true }
       return
     }
+    stopSounds()
     router_pause(engine, 1)
     interrupted = true
     status = "Sharing paused for sleep"
@@ -319,6 +375,8 @@ import Observation
     }
   }
   private func cleanup() {
+    stopSounds()
+    soundSlots.removeAll()
     if let engine { router_destroy(engine) }
     engine = nil
     do { try recovery.restore() } catch { detail = error.localizedDescription }
@@ -347,6 +405,11 @@ import Observation
     ticks += 1
     if ticks % 12 == 0 { refresh() }
     guard active, let engine else { return }
+    soundMeters = (0..<2).map { router_sound_meter(engine, Int32($0)) }
+    if playingSoundID != nil && Date().timeIntervalSince(soundStartedAt) > 0.3 && !soundStatus.hasPrefix("Loading"), router_sound_playing(engine) == 0 {
+      playingSoundID = nil
+      soundStatus = "Ready for another sound."
+    }
     meters = (0..<6).map { router_meter(engine, Int32($0)) }
     for i in 0..<6 where meters[i] > 0.002 { observed[i] = true }
     dropouts = router_dropouts(engine)
@@ -362,6 +425,7 @@ import Observation
         outputPresent: !outputGone, micRequired: includeVoice, micPresent: !micGone,
         virtualPresent: !bhGone, defaultUnchanged: !changedOutput) || router_is_paused(engine) != 0)
     {
+      stopSounds()
       router_pause(engine, 1)
       interrupted = true
       status = "Sharing paused safely"

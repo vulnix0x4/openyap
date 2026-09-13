@@ -18,3 +18,11 @@ float router_meter(
     int meter); // music, mic, game, listening, send, BlackHole return
 unsigned long router_dropouts(Router *r);
 int router_selftest(void);
+
+// Immutable stereo 48 kHz clips, at most 15 seconds each. -1 stops playback.
+// Loading/triggering use the same control thread; clips live until router destruction.
+int router_sound_load(Router *r, const float *samples, unsigned frames);
+void router_sound_play(Router *r, int slot);
+void router_sound_gain(Router *r, int sink, float gain);
+int router_sound_playing(Router *r);
+float router_sound_meter(Router *r, int sink);

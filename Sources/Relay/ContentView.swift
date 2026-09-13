@@ -104,6 +104,7 @@ struct ContentView: View {
             ).disabled(!model.includeVoice)
           }
         }.fixedSize(horizontal: false, vertical: true)
+        SoundboardView(model: model)
         VStack(alignment: .leading, spacing: 6) {
           MixerStrip(
             title: "Master listening volume", symbol: "speaker.wave.2", gain: $model.gains[4],

@@ -85,3 +85,14 @@ Click **Louder sharing (+6 dB)** below “Music others hear” to boost only sha
 ### Max sharing (1.1.5)
 
 **Max sharing** replaces Louder sharing. Turning it on sets shared music to 100%, locks that slider, and keeps the +6 dB boost active. Mute remains available. Turning it off unlocks the slider and removes the boost. Headphone, microphone, game, and master listening levels stay separate. The output ceiling and Roblox processing still apply; this does not guarantee maximum loudness at another player’s headphones.
+
+### Soundboard (1.2.0)
+
+Open **Soundboard**, start sharing, then click a pad. Twelve original synthesized effects are included: Deep boom, Chat ping, Air horn, Record scratch, Sad trombone, Crickets, Rimshot, Laser pew, Level up, Drama sting, Spring boing, and Alarm. These are original effects, not the exact Vine Boom or Discord recordings.
+
+- **Import sounds…** adds your own mono/stereo audio clips up to 15 seconds (up to 48 custom pads). Files macOS can decode, such as WAV, AIFF, MP3, M4A, and CAF, can be selected; unsupported files show an error. Imported copies remain on your Mac in Application Support/Relay/Sounds and are never uploaded.
+- **Effects I hear** and **Effects others hear** are independent. The listening master also controls local effects. Music mute and Max sharing do not change effects; use the effect sliders or Stop sounds.
+- Clicking a new pad replaces the previous sound. **Stop sounds** stops just the effects, leaving music sharing running. An interruption cancels effects rather than replaying them after reconnection.
+- Search filters pads. Right-click an imported pad to remove its local copy; your original file stays intact.
+
+Effects use the existing selected output and BlackHole routes and the same output protection. There is no new driver or permission request. Pads are disabled until sharing starts. Bluetooth listening can arrive later than the wired/virtual output. The in-session immutable clip cache holds up to three minutes of unique decoded audio; a full cache shows a message, never automatically restarts sharing. Stop/start later clears it.

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "SoundboardDSP.h"
 #define CAP 32768
 #define TAPS 32
 #define PHASES 256
@@ -24,6 +25,7 @@ typedef struct {
   int listening;
 } Endpoint;
 struct Router {
+  Soundboard board;
   Ring ring[2][3];
   Endpoint input[4], output[2];
   _Atomic float gain[5], meter[6];
@@ -173,9 +175,11 @@ static OSStatus callback(AudioDeviceID d, const AudioTimeStamp *t,
       if (out->mBuffers[b].mData)
         memset(out->mBuffers[b].mData, 0, out->mBuffers[b].mDataByteSize);
 
-  float peak = 0;
+  float peak = 0, boardPeak = 0;
   int sink = e->index;
   for (unsigned f = 0; f < frames(out); f++) {
+    float effect[2];
+    sb_sample(&r->board, sink, e->rate, atomic_load(&r->paused), effect);
     float s[3][2] = {{0}};
     for (int src = 0; src < 3; src++) {
       if ((sink == 0 && src == 1) || (sink == 1 && src == 2))
@@ -197,15 +201,17 @@ static OSStatus callback(AudioDeviceID d, const AudioTimeStamp *t,
     for (int c = 0; c < 2; c++) {
       float x =
           sink == 0
-              ? (s[0][c] * r->smooth[sink][0] + s[2][c] * r->smooth[sink][3]) *
+              ? (s[0][c] * r->smooth[sink][0] + s[2][c] * r->smooth[sink][3] + effect[c]) *
                     r->smooth[sink][4]
-              : s[0][c] * r->smooth[sink][1] + s[1][c] * r->smooth[sink][2];
+              : s[0][c] * r->smooth[sink][1] + s[1][c] * r->smooth[sink][2] + effect[c];
+      boardPeak = fmaxf(boardPeak, fabsf(effect[c]));
       x = atomic_load(&r->paused) ? 0 : protect(x);
       put(out, f, c, x);
       peak = fmaxf(peak, fabsf(x));
     }
   }
   atomic_store(&r->meter[3 + sink], peak);
+  atomic_store(&r->board.meter[sink], boardPeak);
   return noErr;
 }
 static OSStatus deviceChanged(AudioObjectID object, UInt32 count,
@@ -238,6 +244,7 @@ static OSStatus start(Endpoint *e, Router *r, int index, int output,
       f.mSampleRate < 8000 || f.mSampleRate > 192000)
     return kAudioDeviceUnsupportedFormatError;
   e->rate = f.mSampleRate;
+  if (output) sb_prepare(&r->board, index, e->rate);
   if (output)
     for (int src = 0; src < 3; src++)
       prepare(&r->ring[index][src],
@@ -287,6 +294,10 @@ static OSStatus start(Endpoint *e, Router *r, int index, int output,
 Router *router_create(void) {
   Router *r = calloc(1, sizeof(Router));
   if (r) {
+    atomic_store(&r->board.gain[0], .35f);
+    atomic_store(&r->board.gain[1], .7f);
+    sb_prepare(&r->board, 0, 48000);
+    sb_prepare(&r->board, 1, 48000);
     float g[] = {.25, .65, .7, .8, .65};
     for (int i = 0; i < 5; i++)
       atomic_store(&r->gain[i], g[i]);
@@ -308,6 +319,19 @@ void router_gain(Router *r, int i, float g) {
   if (r && i >= 0 && i < 5)
     atomic_store(&r->gain[i], isfinite(g) ? clampf(g, 0, 1) : 0);
 }
+int router_sound_load(Router *r, const float *samples, unsigned frames) {
+  return r ? sb_load(&r->board, samples, frames) : -1;
+}
+void router_sound_play(Router *r, int slot) { if (r) sb_trigger(&r->board, slot); }
+void router_sound_gain(Router *r, int sink, float gain) {
+  if (r && sink >= 0 && sink < 2) atomic_store(&r->board.gain[sink], isfinite(gain) ? clampf(gain, 0, 1) : 0);
+}
+int router_sound_playing(Router *r) {
+  if (!r || atomic_load(&r->paused)) return 0;
+  uint64_t command = atomic_load(&r->board.command);
+  return (command & 255) && (atomic_load(&r->board.playing[0]) == command || atomic_load(&r->board.playing[1]) == command);
+}
+float router_sound_meter(Router *r, int sink) { return r && sink >= 0 && sink < 2 ? atomic_load(&r->board.meter[sink]) : 0; }
 void router_music_boost(Router *r, int enabled) {
   if (r) atomic_store(&r->musicBoost, enabled != 0);
 }
@@ -355,6 +379,7 @@ void router_stop(Router *r) {
 void router_destroy(Router *r) {
   if (r) {
     router_stop(r);
+    sb_free(&r->board);
     free(r);
   }
 }

@@ -78,3 +78,17 @@ Added an optional +6 dB music-send boost before the existing output protector, w
 ## 1.1.5 — Max sharing locks the music-send level
 
 Release build and signature verification passed. A model-level test (`Tests/MaxSharingTests.swift`) verified enabling Max sharing sets 100%, effective music-send gain stays at unity even if the backing slider value is changed, other gains remain independent, mute overrides the lock, and disabling restores slider control. The test never started an audio session. Existing +6 dB DSP boost/protection code is unchanged from the tested 1.1.4 version. Updated the usual bundle without restarting the active process. Live UI and remote-player loudness remain untested during the current call.
+
+## 1.2.0 — soundboard
+
+Release build succeeded. Existing sanitizer DSP/routing/app-isolation suites passed. `Scripts/soundboard-test.sh` passed with the following coverage:
+
+- C playback through both output callbacks, separate effect gains, local master isolation, music-mute/boost independence, immediate zero/stop, retrigger, natural completion, interruption with no replay, immutable clips, finite sample validation, and bounded registration.
+- Independent 44.1/48 kHz cursors and downsampling rejection of a 12 kHz signal at 16 kHz output.
+- Combined full-scale music/effects remain protected; stopping effects leaves music active.
+- All 12 synthesized presets are finite, bounded, non-silent, and survive save/decode; 24 and 44.1 kHz mono imports convert to stereo 48 kHz. Invalid and overlong audio are rejected. A partial-file-read issue found by testing was fixed by reading until EOF before conversion.
+- Library tests in temporary directories verified import/copy, persisted identity after reopening, and deletion without removing the source file.
+
+No sound was played through live devices, no sharing session was started/stopped by tests, and remote Roblox audibility remains unverified. Actual pad/slider interaction, import-panel interaction, and physical reconnection require hands-on verification after the current session. Offscreen rendering does not substitute for live native UI verification.
+
+Strict bundle signature verification passed. The local app was updated by atomic directory exchange; the existing PID remained alive, and its previous bundle was retained without an .app extension so app search gains no duplicate.
