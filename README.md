@@ -115,3 +115,5 @@ The local library now has 42 sourced recordings. New additions include Discord i
 ### Shared music/effects level (1.3.0)
 
 Music and soundboard effects now share a single send gain and mute, shown in both places. **Max sharing** sets and locks that shared level at 100% and adds +6 dB to both before the output protector. Microphone gain remains separate, as do local music/effect listening levels. The shared control does not bypass Roblox processing. The local collection was trimmed to 28 clips based on feedback; removed files were moved out of the active library into a local Removed Sounds backup.
+
+Local “Mafia Voting Suspense” cue: a 12-second excerpt of [Suspense Drum Sound Effect](https://orangefreesounds.com/suspense-drum-sound-effect/) by Alexander / Orange Free Sounds, [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). Converted to stereo 48 kHz CAF with a 100 ms fade-out. This personal, noncommercial-use recording stays in the local library and is not bundled in releases. Decode and persistence were verified without live playback.
