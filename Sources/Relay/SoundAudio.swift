@@ -9,7 +9,7 @@ enum SoundAudio {
     return try decode(url)
   }
   static func problem(_ message: String) -> NSError {
-    NSError(domain: "Relay.Soundboard", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
+    NSError(domain: "OpenYap.Soundboard", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
   }
   static func decode(_ url: URL) throws -> [Float] {
     let file = try AVAudioFile(forReading: url, commonFormat: .pcmFormatFloat32, interleaved: false)

@@ -8,7 +8,7 @@ final class ListeningAnchor {
   let uid = "local.relay.listening.\(UUID().uuidString)"
   init(output: AudioDevice) throws {
     let info: [String: Any] = [
-      kAudioAggregateDeviceNameKey: "Relay Listening",
+      kAudioAggregateDeviceNameKey: "OpenYap Listening",
       kAudioAggregateDeviceUIDKey: uid,
       kAudioAggregateDeviceIsPrivateKey: false,
       kAudioAggregateDeviceIsStackedKey: false,

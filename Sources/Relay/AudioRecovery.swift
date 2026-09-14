@@ -8,7 +8,7 @@ final class AudioRecovery {
   func begin(outputID: AudioDeviceID, outputUID: String) throws {
     if pending {
       throw NSError(
-        domain: "Relay", code: 1,
+        domain: "OpenYap", code: 1,
         userInfo: [
           NSLocalizedDescriptionKey: "Restore the previous audio session before starting a new one."
         ])
@@ -26,14 +26,14 @@ final class AudioRecovery {
       AudioObjectID(kAudioObjectSystemObject), kAudioHardwarePropertyDefaultOutputDevice)
     let currentUID = Hardware.string(current, kAudioDevicePropertyDeviceUID)
     let expected = defaults.string(forKey: "relayOutputUID")
-    // Respect a deliberate output change made outside Relay during a session.
+    // Respect a deliberate output change made outside OpenYap during a session.
     if currentUID == expected {
       guard let device = Hardware.devices().first(where: { $0.uid == old && $0.outputs > 0 }) else {
         throw NSError(
-          domain: "Relay", code: 2,
+          domain: "OpenYap", code: 2,
           userInfo: [
             NSLocalizedDescriptionKey:
-              "The previous output is disconnected. Reconnect it, then click Restore normal audio. No speaker fallback was selected by Relay."
+              "The previous output is disconnected. Reconnect it, then click Restore normal audio. No speaker fallback was selected by OpenYap."
           ])
       }
       try Hardware.setOutputPreservingOtherDefaults(device.id)

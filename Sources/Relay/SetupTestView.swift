@@ -7,7 +7,7 @@ struct SetupTestView: View {
     VStack(alignment: .leading, spacing: 18) {
       Text("Test your setup").font(.title.bold())
       Text(
-        "Start sharing first. These checks use real audio; Relay never sends a test tone into your receiving app."
+        "Start sharing first. These checks use real audio; OpenYap never sends a test tone into your receiving app."
       ).foregroundStyle(.secondary)
       TestCheck(
         number: "1", title: "Music capture", detail: "Play a song in the selected music app.",

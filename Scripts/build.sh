@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "${0:A:h:h}"
 swift build -c release
-app="${RELAY_APP_OUTPUT:-$PWD/build/Relay.app}"
+app="${RELAY_APP_OUTPUT:-$PWD/build/OpenYap.app}"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 swift Scripts/icon.swift build/Relay.iconset
 iconutil -c icns build/Relay.iconset -o "$app/Contents/Resources/Relay.icns"
@@ -14,14 +14,14 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>CFBundleExecutable</key><string>Relay</string>
 <key>CFBundleIdentifier</key><string>local.relay.MusicShare</string>
 <key>CFBundleIconFile</key><string>Relay</string>
-<key>CFBundleName</key><string>Relay</string>
-<key>CFBundleDisplayName</key><string>Relay</string>
+<key>CFBundleName</key><string>OpenYap</string>
+<key>CFBundleDisplayName</key><string>OpenYap</string>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>1.3.1</string>
-<key>CFBundleVersion</key><string>12</string>
+<key>CFBundleShortVersionString</key><string>1.4.0</string>
+<key>CFBundleVersion</key><string>13</string>
 <key>LSMinimumSystemVersion</key><string>26.0</string>
-<key>NSAudioCaptureUsageDescription</key><string>Relay separates music and call audio so you can listen and share at independent volumes. Audio stays on this Mac.</string>
-<key>NSMicrophoneUsageDescription</key><string>Relay uses your chosen microphone only when you include your voice. The setup test can also measure BlackHole’s virtual input.</string>
+<key>NSAudioCaptureUsageDescription</key><string>OpenYap separates music and call audio so you can listen and share at independent volumes. Audio stays on this Mac.</string>
+<key>NSMicrophoneUsageDescription</key><string>OpenYap uses your chosen microphone only when you include your voice. The setup test can also measure BlackHole’s virtual input.</string>
 <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
 PLIST

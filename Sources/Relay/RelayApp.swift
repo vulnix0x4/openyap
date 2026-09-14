@@ -2,7 +2,7 @@ import AppKit
 import AudioCore
 import SwiftUI
 
-@main struct RelayApp: App {
+@main struct OpenYapApp: App {
   @State private var model = SessionModel()
   @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
   init() {
@@ -25,7 +25,7 @@ import SwiftUI
     }
   }
   var body: some Scene {
-    Window("Relay — Share your sound", id: "main") {
+    Window("OpenYap — Share your sound", id: "main") {
       ContentView(model: model)
         .onAppear { delegate.model = model }.task { await model.hardwareTest() }
     }

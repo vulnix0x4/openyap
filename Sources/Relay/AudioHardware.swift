@@ -72,7 +72,7 @@ enum Hardware {
         inputs: channels(id, kAudioObjectPropertyScopeInput),
         outputs: channels(id, kAudioObjectPropertyScopeOutput),
         transport: uint(id, kAudioDevicePropertyTransportType))
-    }.filter { !$0.name.hasPrefix("Relay capture") }
+    }.filter { !$0.name.hasPrefix("OpenYap capture") && !$0.name.hasPrefix("Relay capture") }
   }
   // Address the chosen physical device only, never the default aggregate or BlackHole.
   private static func volumeProperty(_ device: AudioDevice) -> AudioObjectPropertyAddress? {
@@ -106,7 +106,7 @@ enum Hardware {
 
   static func setOutputVolume(_ device: AudioDevice, value: Float) throws {
     guard value.isFinite, (0...1).contains(value), var a = volumeProperty(device) else {
-      throw NSError(domain: "Relay.Audio", code: -1,
+      throw NSError(domain: "OpenYap.Audio", code: -1,
         userInfo: [NSLocalizedDescriptionKey: "Device volume is unavailable."])
     }
     var value = value
@@ -139,7 +139,7 @@ enum Hardware {
   static func check(_ status: OSStatus, _ action: String) throws {
     guard status == noErr else {
       throw NSError(
-        domain: "Relay.Audio", code: Int(status),
+        domain: "OpenYap.Audio", code: Int(status),
         userInfo: [
           NSLocalizedDescriptionKey:
             "\(action) failed (Core Audio \(status)). Check audio permissions and device availability."

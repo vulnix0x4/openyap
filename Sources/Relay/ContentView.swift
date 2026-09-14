@@ -9,7 +9,7 @@ struct ContentView: View {
           Image(systemName: "waveform.path").font(.largeTitle).foregroundStyle(.mint)
             .accessibilityHidden(true)
           VStack(alignment: .leading, spacing: 2) {
-            Text("Relay").font(.largeTitle.bold())
+            Text("OpenYap").font(.largeTitle.bold())
             Text("Your music. Their soundtrack.").foregroundStyle(.secondary)
           }
           Spacer()
@@ -43,7 +43,7 @@ struct ContentView: View {
           .quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 16))
         if model.devices.contains(where: { $0.isBluetooth && $0.outputs == 1 }) {
           Text(
-            "Bluetooth headset mode detected. Another app may be using the headphone microphone. Select a separate microphone in that app to restore stereo playback; Relay will not switch it for you."
+            "Bluetooth headset mode detected. Another app may be using the headphone microphone. Select a separate microphone in that app to restore stereo playback; OpenYap will not switch it for you."
           ).font(.caption).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
         }
         Text(
@@ -51,7 +51,7 @@ struct ContentView: View {
         ).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
         if !model.monitorDestination {
           Text(
-            "Call audio plays normally through your selected device. Adjust it in the call app; Relay’s master controls only your music."
+            "Call audio plays normally through your selected device. Adjust it in the call app; OpenYap’s master controls only your music."
           ).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
         }
         if model.normalOutputNeedsSetup && !model.active && !model.recoveryPending {
@@ -162,7 +162,7 @@ struct ContentView: View {
         }
         DisclosureGroup("Advanced & recovery", isExpanded: $model.advanced) {
           VStack(alignment: .leading, spacing: 8) {
-            Toggle("Control call/game audio in Relay", isOn: $model.monitorDestination).disabled(
+            Toggle("Control call/game audio in OpenYap", isOn: $model.monitorDestination).disabled(
               model.active || model.busy)
             Text(
               "Turn this off for recorders or apps without a capturable output. Music and voice sharing still work; set call playback volume inside that app."
@@ -171,7 +171,7 @@ struct ContentView: View {
               "Music → listening + BlackHole\nSelected microphone → BlackHole only\n\(model.destinationName) → \(model.monitorDestination ? "listening only; never the sharing bus" : "normal app playback; not captured")"
             ).font(.caption.monospaced())
             Text(
-              "Relay temporarily uses Relay Listening, a fixed route to your chosen device, as the default output. Stop restores the previous output. Existing multi-output devices, and input selection are untouched. Device volume changes only when you move the speaker / headphone slider; that intentional adjustment is kept."
+              "OpenYap temporarily uses OpenYap Listening, a fixed route to your chosen device, as the default output. Stop restores the previous output. Existing multi-output devices, and input selection are untouched. Device volume changes only when you move the speaker / headphone slider; that intentional adjustment is kept."
             ).font(.caption)
             Text(
               "Live peaks: music \(model.meters[0], specifier: "%.3f") · mic \(model.meters[1], specifier: "%.3f") · call/game \(model.meters[2], specifier: "%.3f") · send \(model.meters[4], specifier: "%.3f") · return \(model.meters[5], specifier: "%.3f")"
@@ -181,7 +181,7 @@ struct ContentView: View {
             ).font(.caption).foregroundStyle(.secondary)
             if model.micLockInstalled {
               Text(
-                "MicLock is installed. Silent mic input can mean a hardware mute, privacy denial, or MicLock blocking. Check it yourself; Relay cannot identify or bypass its internal block state."
+                "MicLock is installed. Silent mic input can mean a hardware mute, privacy denial, or MicLock blocking. Check it yourself; OpenYap cannot identify or bypass its internal block state."
               ).font(.caption).foregroundStyle(.orange)
             }
             HStack {

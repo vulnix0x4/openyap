@@ -8,14 +8,14 @@ final class ProcessCapture {
     let processes = Hardware.processIDs(bundle: bundle)
     guard !processes.isEmpty else {
       throw NSError(
-        domain: "Relay", code: 4,
+        domain: "OpenYap", code: 4,
         userInfo: [
           NSLocalizedDescriptionKey:
-            "Open \(label) before starting. Play some audio in it first so Relay can find its audio process. For a call app, you can also turn off Control call/game audio in Relay."
+            "Open \(label) before starting. Play some audio in it first so OpenYap can find its audio process. For a call app, you can also turn off Control call/game audio in OpenYap."
         ])
     }
     let description = CATapDescription(stereoMixdownOfProcesses: processes)
-    description.name = "Relay \(label)"
+    description.name = "OpenYap \(label)"
     description.isPrivate = true
     description.isExclusive = false
     description.bundleIDs = [bundle]
@@ -23,9 +23,9 @@ final class ProcessCapture {
     description.muteBehavior = .muted
     try Hardware.check(
       AudioHardwareCreateProcessTap(description, &tap),
-      "Capturing \(label). Allow System Audio Recording for Relay")
+      "Capturing \(label). Allow System Audio Recording for OpenYap")
     let dictionary: [String: Any] = [
-      kAudioAggregateDeviceNameKey: "Relay capture \(label)",
+      kAudioAggregateDeviceNameKey: "OpenYap capture \(label)",
       kAudioAggregateDeviceUIDKey: "local.relay.capture.\(UUID().uuidString)",
       kAudioAggregateDeviceIsPrivateKey: true,
       kAudioAggregateDeviceIsStackedKey: false,

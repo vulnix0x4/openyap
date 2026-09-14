@@ -249,7 +249,7 @@ import Observation
     }
     guard let bh = blackHole else {
       fail(
-        "BlackHole 2ch is unavailable. Reconnect or enable the existing driver; Relay will not install anything."
+        "BlackHole 2ch is unavailable. Reconnect or enable the existing driver; OpenYap will not install anything."
       )
       return
     }
@@ -279,7 +279,7 @@ import Observation
       let granted = await requestMicrophone()
       guard granted else {
         fail(
-          "Microphone permission is off. Allow Relay in System Settings → Privacy & Security → Microphone, or exclude your voice."
+          "Microphone permission is off. Allow OpenYap in System Settings → Privacy & Security → Microphone, or exclude your voice."
         )
         return
       }
@@ -301,7 +301,7 @@ import Observation
       }
       guard let r = router_create() else {
         throw NSError(
-          domain: "Relay", code: 3,
+          domain: "OpenYap", code: 3,
           userInfo: [NSLocalizedDescriptionKey: "Could not allocate audio buffers."])
       }
       engine = r
@@ -429,7 +429,7 @@ import Observation
       interrupted = true
       status = "Sharing paused safely"
       detail =
-        "An audio device or the system output changed. Relay is silent and keeps captured apps muted. Reconnect your devices, then stop and start again. No automatic speaker fallback."
+        "An audio device or the system output changed. OpenYap is silent and keeps captured apps muted. Reconnect your devices, then stop and start again. No automatic speaker fallback."
     }
     if !interrupted && observed[0] && detail.hasPrefix("No music signal yet") {
       detail = destinationInstructions

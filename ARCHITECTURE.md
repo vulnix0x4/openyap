@@ -2,7 +2,7 @@
 
 ## Choice and platform basis
 
-Apple’s Core Audio process taps capture named processes without ScreenCaptureKit’s screen/display capture machinery. Relay uses CATapDescription stereo mixdown, an explicit nonempty process allowlist, private taps, and tap-only private aggregate inputs. `muteBehavior = .muted` suppresses original playback while Relay controls monitoring. macOS 26 bundle IDs and process restoration keep the selected app associated with its tap across restarts. There is no global/system-mix tap.
+Apple’s Core Audio process taps capture named processes without ScreenCaptureKit’s screen/display capture machinery. OpenYap uses CATapDescription stereo mixdown, an explicit nonempty process allowlist, private taps, and tap-only private aggregate inputs. `muteBehavior = .muted` suppresses original playback while OpenYap controls monitoring. macOS 26 bundle IDs and process restoration keep the selected app associated with its tap across restarts. There is no global/system-mix tap.
 
 References verified against the installed Xcode 26.6 SDK and Apple’s documentation:
 
@@ -11,7 +11,7 @@ References verified against the installed Xcode 26.6 SDK and Apple’s documenta
 - https://developer.apple.com/documentation/coreaudio/catapmutebehavior
 - Installed `CATapDescription.h`, `AudioHardware.h`, and `AudioHardwareBase.h` specify bundle restoration, aggregate tap lists, stream usage, and ownership of returned CF objects.
 
-BlackHole is reused as the public virtual input seen by the receiving app. Relay installs no driver and does not rename it. The “app’s virtual microphone” is therefore labeled **BlackHole 2ch**, not an invented Relay microphone device.
+BlackHole is reused as the public virtual input seen by the receiving app. OpenYap installs no driver and does not rename it. The “app’s virtual microphone” is therefore labeled **BlackHole 2ch**, not an invented OpenYap microphone device.
 
 ## Signal paths
 
@@ -28,7 +28,7 @@ BlackHole input → optional readback peak meter only (never connected to either
 
 The game source is never enqueued into the sharing rings. The microphone is never enqueued into monitoring rings. A virtual or aggregate device cannot be selected as a physical microphone or listening destination. Bluetooth inputs cannot be selected. The send bus has no master-listening control.
 
-Only these two allowlisted app streams are included in Relay’s listening volume. Notification sounds and other apps remain ordinary system audio and are not controlled by Relay’s master.
+Only these two allowlisted app streams are included in OpenYap’s listening volume. Notification sounds and other apps remain ordinary system audio and are not controlled by OpenYap’s master.
 
 ## Real-time engine
 
@@ -48,7 +48,7 @@ A one-time explicit setup action establishes the selected physical device as the
 
 Before a session default-output mutation, the prior UID and temporary-route UID are durably journaled in UserDefaults. Output changes preserve the contemporaneous default input and sound-effects device, including macOS’s automatic input-selection side effects. Recovery restores a still-owned default route; an external deliberate change is retained. Missing previous outputs keep the journal and safe route for a later retry.
 
-The temporary public “Relay Listening” aggregate contains exactly one selected output device. It prevents Relay from intentionally substituting built-in speakers. Device-alive and sample-rate HAL listeners immediately pause the C mixer; UI polling also checks device identity and default-output changes. Reconnection requires explicit stop/start and UID re-resolution. Physical reconnection remains a hands-on test item.
+The temporary public “OpenYap Listening” aggregate contains exactly one selected output device. It prevents OpenYap from intentionally substituting built-in speakers. Device-alive and sample-rate HAL listeners immediately pause the C mixer; UI polling also checks device identity and default-output changes. Reconnection requires explicit stop/start and UID re-resolution. Physical reconnection remains a hands-on test item.
 
 Permissions: NSAudioCaptureUsageDescription for system audio; NSMicrophoneUsageDescription only when voice or the optional virtual-input measurement is requested. No screen frames, Accessibility permission, Apple Events automation, network service, telemetry, or audio recordings are used by the app. MicLock installation is observable; its proprietary block state is not.
 
@@ -56,15 +56,15 @@ Permissions: NSAudioCaptureUsageDescription for system audio; NSMicrophoneUsageD
 
 The included executable targets this Apple Silicon Mac and macOS 26+. It is ad-hoc signed, not notarized. The package builds with Xcode’s Swift 6 toolchain in Swift 5 language compatibility mode for the C callback/pointer boundary. No third-party dependencies are linked.
 
-The receiving app’s microphone/output selection and voice processing are external to Relay. Protected music, OS privacy denial, other apps writing to BlackHole, driver failures, and Bluetooth transport quality can affect results. Software isolation prevents Relay from routing game audio back into the mic; using loud speakers can still cause physical acoustic pickup through a real microphone.
+The receiving app’s microphone/output selection and voice processing are external to OpenYap. Protected music, OS privacy denial, other apps writing to BlackHole, driver failures, and Bluetooth transport quality can affect results. Software isolation prevents OpenYap from routing game audio back into the mic; using loud speakers can still cause physical acoustic pickup through a real microphone.
 
 ## Version 1.1: selectable receivers
 
 The destination bundle is selected by the user rather than hardcoded to Roblox. The same C source slot 2 remains a listening-only bus: it can carry Discord, Zoom, another game, or any other individually capturable selected receiver. That slot is structurally excluded from the send bus.
 
-With call monitoring disabled, source slot 2 has no IOProc and a zero sample rate; the music and optional microphone still mix into BlackHole. The receiver plays directly to its selected output, so Relay disables the call/game slider and explains that master listening no longer controls that app. No receiver process is required to start in this mode.
+With call monitoring disabled, source slot 2 has no IOProc and a zero sample rate; the music and optional microphone still mix into BlackHole. The receiver plays directly to its selected output, so OpenYap disables the call/game slider and explains that master listening no longer controls that app. No receiver process is required to start in this mode.
 
-A shared AppRoutingPolicy rejects identical, ancestor/helper, empty, and Relay-owned bundle selections. Startup also compares discovered process IDs for overlap. Music and receiver pickers filter conflicting entries. Browser tabs cannot be isolated by these process taps; music and calls must use different apps. Receiver selection does not restrict which external applications can read BlackHole.
+A shared AppRoutingPolicy rejects identical, ancestor/helper, empty, and OpenYap-owned bundle selections. Startup also compares discovered process IDs for overlap. Music and receiver pickers filter conflicting entries. Browser tabs cannot be isolated by these process taps; music and calls must use different apps. Receiver selection does not restrict which external applications can read BlackHole.
 
 ## Soundboard
 

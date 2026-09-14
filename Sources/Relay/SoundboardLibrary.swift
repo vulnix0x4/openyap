@@ -25,7 +25,7 @@ import UniformTypeIdentifiers
     let panel = NSOpenPanel()
     panel.allowedContentTypes = [.audio]
     panel.allowsMultipleSelection = true
-    panel.message = "Choose audio clips up to 15 seconds each. Files are copied into Relay."
+    panel.message = "Choose audio clips up to 15 seconds each. Files are copied into OpenYap."
     panel.begin { [weak self] response in
       guard response == .OK, let self else { return }
       Task { @MainActor in await self.importURLs(panel.urls) }
