@@ -16,8 +16,13 @@ struct SoundboardView: View {
           Button("Import sounds…", systemImage: "plus", action: model.soundLibrary.importSounds)
             .disabled(model.soundLibrary.importing)
         }
+        ForEach(SoundReaction.allCases) { reaction in
+          let group = clips.filter { $0.reaction == reaction }
+          if !group.isEmpty {
+            Text(reaction.rawValue).font(.subheadline.weight(.semibold))
+              .foregroundStyle(.secondary).accessibilityAddTraits(.isHeader)
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
-          ForEach(clips) { clip in
+          ForEach(group) { clip in
             Button { model.playSound(clip) } label: {
               HStack(spacing: 8) {
                 Image(systemName: clip.symbol).frame(width: 20)
@@ -32,6 +37,11 @@ struct SoundboardView: View {
                 }
               }
           }
+        }
+          }
+        }
+        if clips.isEmpty {
+          Text("No sounds found. Try another search or import a clip.").foregroundStyle(.secondary)
         }
         HStack(spacing: 18) {
           VStack(alignment: .leading, spacing: 4) {
