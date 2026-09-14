@@ -85,7 +85,7 @@ struct ContentView: View {
             Label("TO OTHERS", systemImage: "person.wave.2").font(.caption.weight(.bold))
               .foregroundStyle(.secondary)
             MixerStrip(
-              title: "Music others hear", symbol: "music.note", gain: $model.gains[1],
+              title: "Music + effects others hear", symbol: "music.note", gain: $model.gains[1],
               muted: $model.muted[1],
               level: model.meters[0] * model.gains[1] * (model.muted[1] ? 0 : 1), tint: .orange,
               sliderLocked: model.maxSharing)
@@ -94,8 +94,8 @@ struct ContentView: View {
                 systemImage: "speaker.wave.3.fill")
             }
             .toggleStyle(.button).tint(.orange)
-            .help("Locks shared music at 100% with +6 dB boost. Mute still works. Roblox may limit loudness.")
-            .accessibilityLabel("Max sharing, locks music at full volume with boost")
+            .help("Locks shared music and effects at 100% with +6 dB boost. Mute still works. Roblox may limit loudness.")
+            .accessibilityLabel("Max sharing, locks music and effects at full volume with boost")
             MixerStrip(
               title: "My voice to others", symbol: "mic", gain: $model.gains[2],
               muted: $model.muted[2],

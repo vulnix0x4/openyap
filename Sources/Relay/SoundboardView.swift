@@ -39,11 +39,10 @@ struct SoundboardView: View {
             Slider(value: $model.soundHear, in: 0...1).tint(.mint).accessibilityLabel("Effects I hear")
             LevelMeter(level: model.soundMeters[0], tint: .mint)
           }
-          VStack(alignment: .leading, spacing: 4) {
-            Text("Effects others hear · \(Int(model.soundSend * 100))%").font(.caption)
-            Slider(value: $model.soundSend, in: 0...1).tint(.orange).accessibilityLabel("Effects others hear")
-            LevelMeter(level: model.soundMeters[1], tint: .orange)
-          }
+          MixerStrip(title: "Music + effects to others", symbol: "person.wave.2",
+            gain: $model.gains[1], muted: $model.muted[1],
+            level: model.soundMeters[1], tint: .orange, sliderLocked: model.maxSharing)
+
         }
         HStack {
           Text(model.active ? model.soundStatus : "Start sharing to play sounds to your selected device and BlackHole.")
@@ -63,6 +62,7 @@ struct SoundboardView: View {
     .padding(14).background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 12))
     .onChange(of: expanded) { if expanded { library.refresh() } }
     .onChange(of: model.soundHear) { model.applySoundGains() }
-    .onChange(of: model.soundSend) { model.applySoundGains() }
+    .onChange(of: model.gains) { model.applyGains() }
+    .onChange(of: model.muted) { model.applyGains() }
   }
 }

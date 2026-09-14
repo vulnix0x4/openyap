@@ -8,9 +8,9 @@ OSStatus router_input(Router *r, int source, AudioDeviceID device);
 OSStatus router_output(Router *r, int sink, AudioDeviceID device);
 OSStatus router_verify(Router *r, AudioDeviceID blackhole);
 void router_stop(Router *r);
-void router_music_boost(Router *r, int enabled); // optional +6 dB shared music
+void router_music_boost(Router *r, int enabled); // optional +6 dB shared music + effects
 void router_gain(Router *r, int control,
-                 float gain); // music hear, music send, mic, game, master
+                 float gain); // music hear, music+effects send, mic, game, master
 void router_pause(Router *r, int paused);
 int router_is_paused(Router *r);
 float router_meter(

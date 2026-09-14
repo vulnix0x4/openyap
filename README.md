@@ -91,7 +91,7 @@ Click **Louder sharing (+6 dB)** below “Music others hear” to boost only sha
 Open **Soundboard**, start sharing, then click a pad. Twelve original synthesized effects are included: Deep boom, Chat ping, Air horn, Record scratch, Sad trombone, Crickets, Rimshot, Laser pew, Level up, Drama sting, Spring boing, and Alarm. These are original effects, not the exact Vine Boom or Discord recordings.
 
 - **Import sounds…** adds your own mono/stereo audio clips up to 15 seconds (up to 48 custom pads). Files macOS can decode, such as WAV, AIFF, MP3, M4A, and CAF, can be selected; unsupported files show an error. Imported copies remain on your Mac in Application Support/Relay/Sounds and are never uploaded.
-- **Effects I hear** and **Effects others hear** are independent. The listening master also controls local effects. Music mute and Max sharing do not change effects; use the effect sliders or Stop sounds.
+- **Effects I hear** controls local effects. **Music + effects others hear** controls the shared send level for both music and soundboard clips; both slider locations mirror the same setting. Shared mute and Max sharing apply to both. The listening master also controls local effects. Stop sounds stops just the effects.
 - Clicking a new pad replaces the previous sound. **Stop sounds** stops just the effects, leaving music sharing running. An interruption cancels effects rather than replaying them after reconnection.
 - Search filters pads. Right-click an imported pad to remove its local copy; your original file stays intact.
 
@@ -110,3 +110,8 @@ Expanding the soundboard refreshes the local library, so clips added while Relay
 The local library now has 42 sourced recordings. New additions include Discord incoming/outgoing calls and voice-channel join/leave sounds from [lefuturiste/discord-sounds](https://github.com/lefuturiste/discord-sounds), plus Metal Pipe, Talking Ben Yes/No, Cartoon Slip, Minecraft Anvil, Doors Screech Psst, Clash Royale Heheheha, A Few Moments Later, and more from the previously credited 3kh0 collection. These files remain local, not part of the public app bundle.
 
 **Door Knocking credit:** “Door Knocking Sound Effect” by Alexander / Orange Free Sounds, [source](https://orangefreesounds.com/door-knocking-sound-effect/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The local playback copy is converted from MP3 to stereo 48 kHz CAF. No endorsement implied.
+
+
+### Shared music/effects level (1.3.0)
+
+Music and soundboard effects now share a single send gain and mute, shown in both places. **Max sharing** sets and locks that shared level at 100% and adds +6 dB to both before the output protector. Microphone gain remains separate, as do local music/effect listening levels. The shared control does not bypass Roblox processing. The local collection was trimmed to 28 clips based on feedback; removed files were moved out of the active library into a local Removed Sounds backup.

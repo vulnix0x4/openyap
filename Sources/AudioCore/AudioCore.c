@@ -192,7 +192,7 @@ static OSStatus callback(AudioDeviceID d, const AudioTimeStamp *t,
       float target =
           atomic_load(&r->gain[g]); // exact mute, ramp unmute/gain changes
       if (sink == 1 && g == 1 && atomic_load(&r->musicBoost))
-        target *= 2.0f; // +6 dB on shared music only, before output protection
+        target *= 2.0f; // +6 dB on shared music and effects, before output protection
       r->smooth[sink][g] =
           target == 0
               ? 0
@@ -203,8 +203,8 @@ static OSStatus callback(AudioDeviceID d, const AudioTimeStamp *t,
           sink == 0
               ? (s[0][c] * r->smooth[sink][0] + s[2][c] * r->smooth[sink][3] + effect[c]) *
                     r->smooth[sink][4]
-              : s[0][c] * r->smooth[sink][1] + s[1][c] * r->smooth[sink][2] + effect[c];
-      boardPeak = fmaxf(boardPeak, fabsf(effect[c]));
+              : (s[0][c] + effect[c]) * r->smooth[sink][1] + s[1][c] * r->smooth[sink][2];
+      boardPeak = fmaxf(boardPeak, fabsf(effect[c] * (sink == 0 ? r->smooth[sink][4] : r->smooth[sink][1])));
       x = atomic_load(&r->paused) ? 0 : protect(x);
       put(out, f, c, x);
       peak = fmaxf(peak, fabsf(x));

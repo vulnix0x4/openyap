@@ -17,6 +17,7 @@ int main(void) {
   router_sound_gain(r,0,.25); router_sound_gain(r,1,.75);
   r->board.player[0].gain=.25; r->board.player[1].gain=.75;
   router_gain(r,4,.5);r->smooth[0][4]=.5;
+  router_gain(r,1,1);r->smooth[1][1]=1;
   router_sound_play(r,slot);
   assert(fabs(output(r,0,48000)-.05)<.001);
   assert(fabs(output(r,1,48000)-.3)<.001);
@@ -25,9 +26,17 @@ int main(void) {
   router_gain(r,4,0);
   assert(output(r,0,48000)==0);
   assert(fabs(output(r,1,48000)-.3)<.001);
-  router_music_boost(r,1);router_gain(r,1,0);
-  assert(fabs(output(r,1,48000)-.3)<.001);
-  puts("PASS: music mute, music boost, and master listening cannot alter shared effects");
+  router_gain(r,1,.5);r->smooth[1][1]=.5;
+  assert(fabs(output(r,1,48000)-.15)<.001);
+  router_music_boost(r,1);router_gain(r,1,1);
+  float boosted=0;
+  for(int i=0;i<12;i++) boosted=output(r,1,48000);
+  assert(fabs(boosted-.6)<.003);
+  router_gain(r,1,0);assert(output(r,1,48000)==0);
+  router_gain(r,4,.5);r->smooth[0][4]=.5;
+  assert(fabs(output(r,0,48000)-.05)<.001);
+  puts("PASS: shared slider scales effects, Max boosts effects, shared mute is immediate, local effects stay independent");
+  router_music_boost(r,0);router_gain(r,1,1);r->smooth[1][1]=1;
   router_sound_gain(r,1,0); assert(output(r,1,48000)==0);
   router_sound_gain(r,1,1);
   router_sound_play(r,-1);assert(!router_sound_playing(r));
@@ -75,6 +84,23 @@ int main(void) {
   float peak=output(r,1,48000);assert(peak>0.8 && peak<=.981);
   router_sound_play(r,-1);peak=output(r,1,48000);assert(peak>0.8 && peak<=.981);
   puts("PASS: combined music/effects protected; Stop sounds leaves music playing");
+  router_destroy(r);
+  r=router_create();
+  for(int i=0;i<48000*2;i++) samples[i]=.1;
+  slot=router_sound_load(r,samples,48000);router_sound_play(r,slot);
+  router_sound_gain(r,1,1);r->board.player[1].gain=1;
+  for(int src=0;src<2;src++) {
+    r->input[src].rate=48000;prepare(&r->ring[1][src],1);
+    for(int i=0;i<5000;i++) push(&r->ring[1][src],.2,.2);
+  }
+  router_gain(r,1,.5);r->smooth[1][1]=.5;
+  router_gain(r,2,.5);r->smooth[1][2]=.5;
+  assert(fabs(output(r,1,48000)-.25)<.001);
+  router_gain(r,1,1);router_music_boost(r,1);
+  for(int i=0;i<12;i++) boosted=output(r,1,48000);
+  assert(fabs(boosted-.7)<.003);
+  router_gain(r,1,0);assert(fabs(output(r,1,48000)-.1)<.001);
+  puts("PASS: one gain scales music and effects together; Max and shared mute preserve microphone contribution");
   router_destroy(r);free(samples);
   puts("Soundboard DSP tests passed; no hardware opened.");
 }

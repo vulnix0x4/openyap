@@ -7,7 +7,6 @@ import Observation
 @MainActor @Observable final class SessionModel {
   let soundLibrary = SoundboardLibrary()
   var soundHear: Float = 0.35
-  var soundSend: Float = 0.7
   var soundMeters: [Float] = [0, 0]
   var playingSoundID: String?
   var soundStatus = "Tap a pad. A new sound replaces the previous one."
@@ -139,7 +138,7 @@ import Observation
   func applySoundGains() {
     guard let engine else { return }
     router_sound_gain(engine, 0, soundHear)
-    router_sound_gain(engine, 1, soundSend)
+    router_sound_gain(engine, 1, 1) // music + effects share gain[1] in the output mixer
   }
   func playSound(_ clip: SoundClip) {
     guard active, !busy, !interrupted, let engine else { return }
