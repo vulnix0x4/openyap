@@ -137,3 +137,11 @@ Validation: release build and strict code-signature verification passed; all cur
 Formerly Relay. OpenYap shares music and soundboard effects into games and voice apps that support selecting BlackHole 2ch as their microphone. Compatibility depends on the receiving app; its voice processing can alter music.
 
 The bundle identifier, internal executable name, settings keys, and Application Support/Relay library remain unchanged so existing permissions, recovery data, and imported sounds carry forward. The visible app is now OpenYap.app.
+
+### Typed voices (1.5.0)
+
+Expand **Soundboard → Say something**, type a message, select a Mac voice and **Natural**, **Deep**, or **Tiny**, then click **Play voice** while sharing. Speech replaces the current effect and uses **Effects I hear**, the listening master, and the shared **Music + effects to others** volume, mute, and Max. **Stop sounds** cancels pending speech as well as playback. Stopping sharing or losing a device cancels it too.
+
+Speech is rendered locally using [Apple’s speech-to-buffer API](https://developer.apple.com/documentation/avfaudio/avspeechsynthesizer/write(_:tobuffercallback:)), converted to stereo 48 kHz, and fed through the same protected soundboard mixer. There are no accounts, voice uploads, additional microphone permissions, or automatic voice downloads. Available voices depend on macOS; unavailable or failing voices show an error. Messages are limited to 220 characters and 15 seconds; longer speech is rejected, not silently cut off. Speech text is not saved to disk; temporary rendered audio is removed after decoding. Repeated identical messages reuse their session audio cache. The existing sound cache is bounded to 64 clips / 180 seconds per sharing session; if full, restart sharing when convenient. Receiving apps may still apply voice processing.
+
+Run `zsh Scripts/speech-test.sh` to render silent-to-speakers test files using an installed English voice. It needs access to the macOS speech service, so a restricted shell sandbox may time out.

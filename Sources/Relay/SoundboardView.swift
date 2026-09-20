@@ -43,6 +43,7 @@ struct SoundboardView: View {
         if clips.isEmpty {
           Text("No sounds found. Try another search or import a clip.").foregroundStyle(.secondary)
         }
+        SpeechView(model: model)
         HStack(spacing: 18) {
           VStack(alignment: .leading, spacing: 4) {
             Text("Effects I hear · \(Int(model.soundHear * 100))%").font(.caption)

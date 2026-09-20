@@ -6,6 +6,7 @@ import Observation
 
 @MainActor @Observable final class SessionModel {
   let soundLibrary = SoundboardLibrary()
+  @ObservationIgnored private let speechRenderer = SpeechRenderer()
   var soundHear: Float = 0.35
   var soundMeters: [Float] = [0, 0]
   var playingSoundID: String?
@@ -142,6 +143,7 @@ import Observation
   }
   func playSound(_ clip: SoundClip) {
     guard active, !busy, !interrupted, let engine else { return }
+    speechRenderer.cancel()
     soundRequest += 1
     let request = soundRequest
     // Stop the old clip immediately; decoding cannot accidentally resume it.
@@ -149,6 +151,7 @@ import Observation
     playingSoundID = clip.id
     soundStatus = "Loading \(clip.name)…"
     Task { @MainActor in
+      guard request == soundRequest, active, !interrupted, self.engine == engine else { return }
       do {
         var slot = soundSlots[clip.id]
         if slot == nil {
@@ -173,7 +176,41 @@ import Observation
       }
     }
   }
+  func playSpeech(text: String, voiceID: String, pitch: Float) {
+    guard active, !busy, !interrupted, let engine else { return }
+    stopSounds()
+    let request = soundRequest
+    let key = "speech:\(voiceID):\(pitch):\(text)"
+    playingSoundID = key
+    soundStatus = "Loading voice…"
+    Task { @MainActor in
+      guard request == soundRequest, active, !interrupted, self.engine == engine else { return }
+      do {
+        var slot = soundSlots[key]
+        if slot == nil {
+          let samples = try await speechRenderer.render(text: text, voiceID: voiceID, pitch: pitch)
+          guard request == soundRequest, active, !interrupted, self.engine == engine else { return }
+          let loaded = samples.withUnsafeBufferPointer {
+            router_sound_load(engine, $0.baseAddress, UInt32(samples.count / 2))
+          }
+          guard loaded >= 0 else { throw SoundAudio.problem("Sound memory is full for this session. Restart sharing later to clear it.") }
+          soundSlots[key] = loaded
+          slot = loaded
+        }
+        guard request == soundRequest, active, !interrupted, self.engine == engine, let slot else { return }
+        applySoundGains()
+        router_sound_play(engine, slot)
+        soundStartedAt = Date()
+        soundStatus = "Playing voice"
+      } catch {
+        guard request == soundRequest else { return }
+        playingSoundID = nil
+        soundStatus = error.localizedDescription
+      }
+    }
+  }
   func stopSounds() {
+    speechRenderer.cancel()
     soundRequest += 1
     if let engine { router_sound_play(engine, -1) }
     playingSoundID = nil
