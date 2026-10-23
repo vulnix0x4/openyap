@@ -112,3 +112,16 @@ Added local AVSpeechSynthesizer buffer rendering and Natural/Deep/Tiny styles un
 Validation: release compilation; rendered Samantha speech at all three pitches into nonzero, finite, bounded stereo 48 kHz PCM; empty/over-limit text, unavailable voice, overlong audio, cancellation, and rendering again after cancellation. Existing offline soundboard DSP tests verify shared gain/mute/Max, separate listening gain, output protection, resampling and Stop preserving music. Speech service tests require an unrestricted local process; restricted-sandbox rendering timed out as expected and produced a recoverable error.
 
 Hands-on verification still needed: subjective voice/style quality, UI layout with every installed voice, and another participant hearing speech in Roblox or another receiving app. No live game/call was interrupted for testing. The preexisting session cache capacity also applies to speech.
+
+## Windows port: October 22, 2026
+
+Host: Windows 11 build 26300, x64, 150% display scaling. Devices: WH-1000XM5 (Bluetooth A2DP + hands-free), fifine USB microphone, Realtek S/PDIF, NVIDIA HDMI. **VB-CABLE is not installed on this PC**, so the cable itself was not exercised; the Realtek S/PDIF output stood in for the virtual microphone and was read back with endpoint loopback. Spotify, Discord, and a game were running and were deliberately left untouched: every real-device test used a helper process playing an inaudible −80 dBFS tone as the "music app".
+
+Automated, all passing:
+
+- `Windows/Scripts/test.ps1`: DSP self-test (send equation, listening carries no music/mic, master never changes the send, exact mutes, ceiling, NaN/∞ sanitizing, compensation hold and slider-drag lag, pause silence, 106 s of 44.1→48 kHz at 120 ppm drift with no buffer recovery, 1 kHz amplitude, soundboard sinks, stop, 15 s limit); Media Foundation decoding of six Windows system WAVs including resampling, rejection of a non-audio file; speech rendering with measured median pitch Deep 80 Hz < Natural 104 Hz < Tiny 130 Hz, 221-character rejection.
+- `Windows/Scripts/hardware-test.ps1`: real application-loopback capture, real render streams to the headphones and the stand-in cable, loopback readback. While "Music I hear" swept the helper's Windows volume 1 → 0.5 → 0.1 → 0.0002 → 1, the shared send stayed at 1.00e-4 (the tone's true level) at every sample, readback matched, zero buffer recoveries; the helper's volume was restored and no journal remained.
+- `Windows/Scripts/recovery-test.ps1`: OpenYap set the helper to 50%, was force-killed, the 50% volume and journal survived, `--restore` returned the helper to 100% and removed the journal.
+- Interface: rendered at 150% scaling (main view, expanded soundboard, advanced); idle window 1.3% of one core, ~50 MB; close stops cleanly.
+
+Still needs hands-on verification on Windows: VB-CABLE end to end into Roblox/Discord/Zoom with another person listening; microphone capture (the fifine was not opened); Spotify and real games as sources, including multi-process browsers; Bluetooth disconnect/reconnect and sleep/wake; per-monitor DPI changes; Windows 10 machines; ducking behaviour with the "Do nothing" setting; long sessions.
