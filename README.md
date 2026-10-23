@@ -2,6 +2,8 @@
 
 A native, local Mac mixer for sharing music and an optional microphone into voice-chat, meeting, game, or recording apps that accept **BlackHole 2ch** as an input. Requires **macOS 26 or later**, Apple Silicon for the included build, and the existing **BlackHole 2ch** driver. No subscriptions, downloads, or paid libraries.
 
+**On Windows?** [Download OpenYap-Windows.zip](https://github.com/vulnix0x4/openyap/releases/latest/download/OpenYap-Windows.zip) and see [Windows/README.md](Windows/README.md). The Windows version (Windows 10 build 20348 or later) uses the free VB-CABLE driver in place of BlackHole and builds with the compiler included in Windows.
+
 ## Open and use
 
 1. [Download OpenYap](https://github.com/vulnix0x4/openyap/releases/latest), extract the ZIP, and open OpenYap.app. Or build `build/OpenYap.app` from source. Open your music and receiving apps, then play a song.
