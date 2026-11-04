@@ -18,12 +18,12 @@ namespace OpenYap
         [STAThread]
         static int Main(string[] args)
         {
-            if (args.Contains("--self-test")) return Mixer.SelfTest(Console.WriteLine);
+            if (args.Contains("--self-test")) return Mixer.SelfTest(Console.WriteLine) + Hardware.ClassificationTest(Console.WriteLine);
             if (args.Contains("--devices"))
             {
                 foreach (var d in Hardware.Devices())
                     Console.WriteLine((d.IsRender ? "out" : "in ") + " | " + d.Name + " | ch:" + d.Channels + " | " + d.Enumerator +
-                        (d.IsVirtual ? " | virtual" : "") + (d.IsBluetooth ? " | bluetooth" : "") + " | " + d.Id);
+                        (d.IsCable ? " | cable" : d.IsVirtual ? " | virtual" : "") + (d.IsBluetooth ? " | bluetooth" : "") + " | " + d.Id);
                 return 0;
             }
             if (args.Contains("--apps"))

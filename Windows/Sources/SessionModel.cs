@@ -94,7 +94,7 @@ namespace OpenYap
 
         public List<AudioDevice> Outputs { get { return Devices.Where(d => d.IsRender && d.IsPhysical && d.Channels != 1).ToList(); } }
         public List<AudioDevice> Microphones { get { return Devices.Where(d => !d.IsRender && d.IsPhysical && !d.IsBluetooth).ToList(); } }
-        public List<AudioDevice> VirtualOutputs { get { return Devices.Where(d => d.IsRender && d.IsVirtual).OrderBy(d => d.Name.StartsWith("CABLE Input") ? 0 : 1).ToList(); } }
+        public List<AudioDevice> VirtualOutputs { get { return Devices.Where(d => d.IsRender && d.IsCable).OrderBy(d => d.Name.StartsWith("CABLE Input") ? 0 : 1).ToList(); } }
         public AudioDevice SelectedOutput { get { return Outputs.FirstOrDefault(d => d.Id == OutputId); } }
         public AudioDevice VirtualOutput
         {
@@ -114,7 +114,7 @@ namespace OpenYap
             {
                 var output = VirtualOutput;
                 if (output == null) return null;
-                return Devices.Where(d => !d.IsRender && d.IsVirtual)
+                return Devices.Where(d => !d.IsRender && d.IsCable)
                     .OrderBy(d => d.Interface == output.Interface ? 0 : 1)
                     .FirstOrDefault(d => d.Interface == output.Interface || d.Name.StartsWith("CABLE Output"));
             }
@@ -153,7 +153,7 @@ namespace OpenYap
             string defaultId = Hardware.DefaultId(EDataFlow.Render, ERole.Console);
             var normal = Devices.FirstOrDefault(d => d.Id == defaultId);
             DefaultOutputName = normal != null ? normal.Name : "";
-            if (!Active && !Busy) NormalOutputNeedsSetup = normal != null && normal.IsVirtual;
+            if (!Active && !Busy) NormalOutputNeedsSetup = normal != null && normal.IsCable;
             string defaultMic = Hardware.DefaultId(EDataFlow.Capture, ERole.Communications);
             BluetoothDefaultMic = Devices.Any(d => d.Id == defaultMic && d.IsBluetooth);
             processes = Processes.Snapshot();
@@ -515,7 +515,7 @@ namespace OpenYap
             bool micGone = IncludeVoice && !Devices.Any(d => d.Id == sessionMicId);
             bool cableGone = !Devices.Any(d => d.Id == sessionVirtualId);
             string defaultId = Hardware.DefaultId(EDataFlow.Render, ERole.Console);
-            bool defaultSafe = !Devices.Any(d => d.Id == defaultId && d.IsVirtual);
+            bool defaultSafe = !Devices.Any(d => d.Id == defaultId && d.IsCable);
             bool streamFailed = streams.Any(s => s.Failed);
             if (!Interrupted && (RoutingPolicy.ShouldPause(!outputGone, IncludeVoice, !micGone, !cableGone, defaultSafe) || streamFailed || engine.IsPaused))
             {
