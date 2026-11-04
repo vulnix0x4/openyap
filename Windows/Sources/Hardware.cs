@@ -10,14 +10,26 @@ namespace OpenYap
         public string Id, Name, Interface, Enumerator;
         public bool IsRender;
         public int Channels;
-        // VB-CABLE, VoiceMeeter and similar software endpoints. Never offered as headphones or microphones.
+        // Software endpoints (VB-CABLE, VoiceMeeter, NVIDIA Broadcast, ...). Never offered as headphones or microphones.
         public bool IsVirtual
         {
             get
             {
                 string text = (Name + " " + Interface).ToLowerInvariant();
-                return Enumerator == "ROOT" || text.Contains("vb-audio") || text.Contains("voicemeeter") ||
-                    text.Contains("virtual") || text.StartsWith("cable ") || text.Contains("(cable") || text.Contains("blackhole");
+                return IsCable || Enumerator == "ROOT" || text.Contains("virtual") || text.Contains("nvidia broadcast");
+            }
+        }
+        // Loopback cables: what is played into the output comes out of the matching input unchanged, so it
+        // can carry the shared mix. Effect devices such as NVIDIA Broadcast are virtual but are not cables:
+        // their "Speakers" process and play to your real output, and their "Microphone" carries your real mic.
+        public bool IsCable
+        {
+            get
+            {
+                string text = (Name + " " + Interface).ToLowerInvariant();
+                if (text.Contains("nvidia broadcast")) return false;
+                return text.Contains("vb-audio") || text.Contains("voicemeeter") || text.Contains("virtual audio cable") ||
+                    text.Contains("blackhole") || text.StartsWith("cable ") || text.Contains("(cable");
             }
         }
         public bool IsBluetooth
@@ -30,6 +42,29 @@ namespace OpenYap
 
     static class Hardware
     {
+        // Device classification against real endpoint names. Part of --self-test.
+        public static int ClassificationTest(Action<string> log)
+        {
+            int fail = 0;
+            Action<string, string, string, bool, bool, bool, bool> expect = (name, iface, enumerator, physical, cable, bluetooth, render) =>
+            {
+                var d = new AudioDevice { Name = name, Interface = iface, Enumerator = enumerator, IsRender = render };
+                if (d.IsPhysical != physical || d.IsCable != cable || d.IsBluetooth != bluetooth) { fail++; log("FAIL classification of " + name); }
+            };
+            expect("CABLE Input (VB-Audio Virtual Cable)", "VB-Audio Virtual Cable", "ROOT", false, true, false, true);
+            expect("CABLE Output (VB-Audio Virtual Cable)", "VB-Audio Virtual Cable", "ROOT", false, true, false, false);
+            expect("VoiceMeeter Input (VB-Audio VoiceMeeter VAIO)", "VB-Audio VoiceMeeter VAIO", "ROOT", false, true, false, true);
+            expect("Line 1 (Virtual Audio Cable)", "Virtual Audio Cable", "ROOT", false, true, false, true);
+            expect("Speakers (NVIDIA Broadcast)", "NVIDIA Broadcast", "ROOT", false, false, false, true);
+            expect("Microphone (NVIDIA Broadcast)", "NVIDIA Broadcast", "ROOT", false, false, false, false);
+            expect("Headphones (WH-1000XM5)", "WH-1000XM5", "BTHENUM", true, false, true, true);
+            expect("Headset (WH-1000XM5)", "WH-1000XM5", "BTHHFENUM", true, false, true, false);
+            expect("Microphone (fifine Microphone)", "fifine Microphone", "USB", true, false, false, false);
+            expect("Realtek Digital Output (Realtek(R) Audio)", "Realtek(R) Audio", "HDAUDIO", true, false, false, true);
+            log("Device classification: " + (fail != 0 ? "FAIL" : "PASS") + " (" + fail + " failures)");
+            return fail;
+        }
+
         static IMMDeviceEnumerator enumerator;
         static IMMDeviceEnumerator Enumerator
         {
