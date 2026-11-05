@@ -59,6 +59,8 @@ powershell -ExecutionPolicy Bypass -File Windows\Scripts\hardware-test.ps1 [-Vir
 powershell -ExecutionPolicy Bypass -File Windows\Scripts\recovery-test.ps1 [-Virtual <render device id>]
 ```
 
-`OpenYap.exe --devices` lists audio endpoint IDs, `--apps` lists capturable apps with their current volumes, and `--restore` restores journaled app volumes. Without VB-CABLE, pass `-Virtual` with an output nobody listens to; the hardware test then reads the send back with endpoint loopback instead of the cable's input.
+`OpenYap.exe --devices` lists audio endpoint IDs, `--apps` lists capturable apps with their current volumes, and `--restore` restores journaled app volumes. With VB-CABLE installed, the hardware test sends into CABLE Input and checks the level that arrives at CABLE Output. Without it, pass `-Virtual` with an output nobody listens to; the test then reads the send back with endpoint loopback.
+
+Only real loopback cables (VB-CABLE, VoiceMeeter, Virtual Audio Cable) are offered as the virtual microphone. Effect devices such as NVIDIA Broadcast are virtual but not cables, so they are never used to send.
 
 Sources are in `Windows\Sources`: `Mixer.cs` is the real-time engine (a port of `AudioCore.c`), `Streams.cs` the WASAPI threads, `SessionModel.cs` the session logic, and `MainForm.cs` the interface.

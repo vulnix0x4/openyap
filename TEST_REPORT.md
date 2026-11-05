@@ -124,4 +124,13 @@ Automated, all passing:
 - `Windows/Scripts/recovery-test.ps1`: OpenYap set the helper to 50%, was force-killed, the 50% volume and journal survived, `--restore` returned the helper to 100% and removed the journal.
 - Interface: rendered at 150% scaling (main view, expanded soundboard, advanced); idle window 1.3% of one core, ~50 MB; close stops cleanly.
 
-Still needs hands-on verification on Windows: VB-CABLE end to end into Roblox/Discord/Zoom with another person listening; microphone capture (the fifine was not opened); Spotify and real games as sources, including multi-process browsers; Bluetooth disconnect/reconnect and sleep/wake; per-monitor DPI changes; Windows 10 machines; ducking behaviour with the "Do nothing" setting; long sessions.
+### Update: November 4, 2026, with VB-CABLE
+
+NVIDIA Broadcast had since been installed on the test PC. Its virtual Speakers/Microphone were wrongly treated as a cable (preselected as the shared microphone, hiding the VB-CABLE notice); fixed by allowlisting loopback cables, with classification cases added to `--self-test`.
+
+VB-CABLE Pack 45 (signatures verified: VB-Audio's publisher certificate, Microsoft hardware catalog) was then installed; no restart was needed. Its installer set CABLE Output as the default recording device and left playback on the WH-1000XM5.
+
+- `Windows/Scripts/hardware-test.ps1` now sends into the real CABLE Input and reads CABLE Output, the device a game or call app records. While "Music I hear" swept the source app's volume 1 → 0.5 → 0.1 → 0.0002 → 1, send held at 1.00e-4 and CABLE Output read 1.03e-4 at every sample, with zero buffer recoveries; volumes restored, no journal left.
+- Microphone: the fifine opened and captured live room signal (peaks 1e-5 to 5e-2) with "My voice to others" at 0%; send and CABLE Output readback stayed exactly 0, so nothing was transmitted.
+
+Still needs hands-on verification on Windows: another person hearing music and voice in Roblox/Discord/Zoom (local readback cannot prove delivery); Spotify and real games as sources, including multi-process browsers; soundboard and speech through the cable (covered by the DSP self-test, not played into a live cable); Bluetooth disconnect/reconnect and sleep/wake; per-monitor DPI changes; Windows 10 machines; ducking behaviour with the "Do nothing" setting; long sessions.

@@ -592,6 +592,7 @@ namespace OpenYap
             if (arg("--virtual") != null) { VirtualId = arg("--virtual"); TestAnyVirtual = true; }
             if (arg("--output") != null) OutputId = arg("--output");
             MonitorDestination = !args.Contains("--no-monitor");
+            IncludeVoice = args.Contains("--voice"); // opens the selected microphone; its send gain comes from --gains
             string savedDestination = Settings.Get("destinationApp"), savedVirtual = Settings.Get("virtualId");
             var levels = (arg("--gains") ?? "0,0,0,0,0").Split(',').Select(s => float.Parse(s, System.Globalization.CultureInfo.InvariantCulture)).ToArray();
             for (int i = 0; i < 5; i++) Gains[i] = levels[i];
@@ -620,6 +621,11 @@ namespace OpenYap
                 {
                     violations++;
                     log("FAIL send level " + Meters[4] + " is not within 20% of " + expectSend + " at app volume " + appLevel);
+                }
+                if (expectSend > 0 && (!ReturnCheckEnabled || Math.Abs(Meters[5] / expectSend - 1) > 0.2f))
+                {
+                    violations++;
+                    log("FAIL readback " + Meters[5] + " is not within 20% of " + expectSend + (ReturnCheckEnabled ? "" : " (readback unavailable: " + ReturnCheckMessage + ")"));
                 }
             }
             int result = Active && !Interrupted && violations == 0 ? 0 : 1;

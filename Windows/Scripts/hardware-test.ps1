@@ -1,7 +1,9 @@
 # Real-device smoke test that leaves your own apps alone. A helper plays an inaudible -80 dBFS tone;
 # OpenYap captures it as the "music app", sweeps "Music I hear" (the helper's own Windows volume),
-# and reads its send back through endpoint loopback. The send level should stay ~1e-4 at every step.
-#   -Virtual  render endpoint ID used as the virtual microphone (default: a VB-CABLE "CABLE Input").
+# and reads its send back. Send and readback must stay ~1e-4 at every step.
+# With VB-CABLE installed and no -Virtual, it sends into CABLE Input and reads CABLE Output: the same
+# device a game or call app uses as its microphone.
+#   -Virtual  render endpoint ID to send to instead, read back with endpoint loopback (PCs without a cable).
 #   Run OpenYap.exe --devices to list IDs. Use an output nobody listens to; the send is -80 dBFS.
 param([string]$Virtual = '', [int]$Seconds = 15)
 $ErrorActionPreference = 'Stop'
@@ -16,8 +18,8 @@ try {
     $helper = Start-Process -FilePath (Resolve-Path build\tonehelper.exe) -ArgumentList ($Seconds + 15) -PassThru -WindowStyle Hidden
     Start-Sleep -Milliseconds 1500
     $arguments = @('--hardware-test', '--music', 'tonehelper', '--no-monitor', '--gains', '1,1,0,0,1',
-        '--hear-sweep', '0.5,0.1,0,1', '--seconds', $Seconds, '--return-loopback', '--expect-send', '1e-4')
-    if ($Virtual) { $arguments += @('--virtual', $Virtual) }
+        '--hear-sweep', '0.5,0.1,0,1', '--seconds', $Seconds, '--expect-send', '1e-4')
+    if ($Virtual) { $arguments += @('--virtual', $Virtual, '--return-loopback') }
     & .\build\OpenYap.exe @arguments | Out-String | Write-Host
     $code = $LASTEXITCODE
     if (-not $helper.HasExited) { Stop-Process -Id $helper.Id }
